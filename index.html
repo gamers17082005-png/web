@@ -2,136 +2,102 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HSV Sugandhika</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial;
+      margin: 0;
+      background: #fff8f0;
+    }
+
+    header {
+      background: #8B0000;
+      color: white;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+    }
+
+    button {
+      background: orange;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    #cart-box {
+      position: fixed;
+      right: 0;
+      top: 60px;
+      width: 300px;
+      background: white;
+      border: 1px solid #ccc;
+      padding: 15px;
+    }
+  </style>
 </head>
 
 <body>
 
-<!-- NAVBAR -->
-<header class="navbar">
-  <img src="https://images.ctfassets.net/ssn6gmzvvg61/6e7AKNdaIPi3RAy9b9B4d1/6ac34c1fd19e2085162657b27013a60f/DSC07616.jpg" class="logo">
-  <nav>
-    <a href="#">Home</a>
-    <a href="#products">Products</a>
-    <a href="#about">About</a>
-    <a href="#contact">Support</a>
-  </nav>
-  <div class="cart" onclick="toggleCart()">🛒 <span id="cart-count">0</span></div>
+<header>
+  <h2>HSV Sugandhika</h2>
+  <div onclick="toggleCart()">🛒 Cart</div>
 </header>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-content">
-    <h1>HSV Sugandhika</h1>
-    <p>From Nature’s Heart to Your Sacred Rituals</p>
-    <button onclick="scrollToProducts()">Shop Now</button>
-  </div>
-</section>
+<section class="products">
 
-<!-- PRODUCTS -->
-<section id="products" class="products">
-  <h2>Featured Products</h2>
   <div class="product-grid">
-    <div class="product-grid">
-
-  <div class="card">
-    <img src="https://www.google.com/imgres?q=images%20with%20jpg&imgurl=https%3A%2F%2Fonlinejpgtools.com%2Fimages%2Fexamples-onlinejpgtools%2Fsunflower.jpg&imgrefurl=https%3A%2F%2Fonlinejpgtools.com%2Fchange-jpg-quality&docid=3SScI2vJtdCeHM&tbnid=kizdMvXviNQzJM&vet=12ahUKEwj9idKXlNyTAxW2SGcHHWuVD6YQnPAOegQIGhAB..i&w=600&h=400&hcb=2&ved=2ahUKEwj9idKXlNyTAxW2SGcHHWuVD6YQnPAOegQIGhAB">
-    <h3>Agarbatti</h3>
-    <p>₹120</p>
-    <button onclick="addToCart('Agarbatti',120)">Add to Cart</button>
-  </div>
-
-  <div class="card">
-    <img src="https://www.google.com/imgres?q=dhoop%20sticks&imgurl=https%3A%2F%2Fm.media-amazon.com%2Fimages%2FI%2F71dkzBHdZxS._AC_UF1000%2C1000_QL80_.jpg&imgrefurl=https%3A%2F%2Fwww.amazon.in%2FRolimoli-Brand-Chemical-Natural-Fragrance%2Fdp%2FB096MS4RXW&docid=hADTcH49AVkpFM&tbnid=YBVBrsnYz5sm-M&vet=12ahUKEwj7xYrQktyTAxUJR2cHHbncK40QnPAOegQIIBAB..i&w=1000&h=1000&hcb=2&ved=2ahUKEwj7xYrQktyTAxUJR2cHHbncK40QnPAOegQIIBAB">
-    <h3>Dhoop</h3>
-    <p>₹150</p>
-    <button onclick="addToCart('Dhoop',150)">Add to Cart</button>
-  </div>
-
-  <!-- NEW PRODUCT -->
-  <div class="card">
-    <img src="https://www.google.com/imgres?q=pooja%20kit&imgurl=https%3A%2F%2Fdont2qcigdrmt.cloudfront.net%2FProductImages%2FOther_Products%2Fcomplete-diwali-puja-kit-1.jpg&imgrefurl=https%3A%2F%2Fwww.rudraksha-ratna.com%2Fbuy%2Fcomplete-diwali-puja-kit%3Fsrsltid%3DAfmBOoqyKxA8W6NViFLVZRFfP-EnJQ9bxdCV15DGA_ledwnJTvYcHzlT&docid=EsinswqsvhYAwM&tbnid=UCnGKln5oqFsWM&vet=12ahUKEwjRsO_kktyTAxUaUGcHHceFPYkQnPAOegQILBAB..i&w=540&h=358&hcb=2&ved=2ahUKEwjRsO_kktyTAxUaUGcHHceFPYkQnPAOegQILBAB">
-    <h3>Pooja Kit</h3>
-    <p>₹499</p>
-    <button onclick="addToCart('Pooja Kit',499)">Add to Cart</button>
-  </div>
-
-</div>
 
     <div class="card">
-      <img src="images/product1.jpg">
+      <img src="https://m.media-amazon.com/images/I/71dkzBHdZxS._AC_UF1000_QL80_.jpg">
       <h3>Agarbatti</h3>
       <p>₹120</p>
-      <button onclick="addToCart('Agarbatti', 100)">Add to Cart</button>
+      <button onclick="addToCart('Agarbatti',120)">Add to Cart</button>
     </div>
 
     <div class="card">
-      <img src="images/product2.jpg">
-      <h3>Dhoop</h3>
-      <p>₹150</p>
-      <button onclick="addToCart('Dhoop',150)">Add to Cart</button>
-    </div>
-
-    <div class="card">
-      <img src="images/download.jpg">
+      <img src="https://m.media-amazon.com/images/I/61sQ+qAKr-L.jpg">
       <h3>Camphor</h3>
-      <p>₹100</p>
-      <button onclick="addToCart('Camphor',100)">Add to Cart</button>
+      <p>₹80</p>
+      <button onclick="addToCart('Camphor',80)">Add to Cart</button>
     </div>
 
   </div>
+
 </section>
 
-<!-- ABOUT -->
-<section id="about" class="about">
-  <h2>About Us</h2>
-  <p>
-    HSV Sugandhika brings you pure, natural, and handcrafted pooja products
-    made with devotion. Our mission is to connect nature with spirituality.
-  </p>
-</section>
-
-<!-- BENEFITS -->
-<section class="benefits">
-  <div>🌿 100% Natural</div>
-  <div>🪔 Handcrafted</div>
-  <div>♻️ Eco-Friendly</div>
-  <div>✨ Divine Fragrance</div>
-</section>
-
-<!-- TESTIMONIALS -->
-<section class="testimonials">
-  <h2>What Customers Say</h2>
-  <p>"Amazing fragrance and purity!"</p>
-</section>
-
-<!-- SUPPORT -->
-<section id="contact" class="support">
-  <h2>Contact Us</h2>
-  <form>
-    <input type="text" placeholder="Name">
-    <input type="email" placeholder="Email">
-    <textarea placeholder="Message"></textarea>
-    <button type="submit">Send</button>
-  </form>
-
-  <a class="whatsapp" href="https://wa.me/918125117683">WhatsApp Us</a>
-</section>
-
-<!-- FOOTER -->
-<footer>
-  <img src="images/logo.png">
-  <p>© 2026 HSV Sugandhika</p>
-</footer>
-
-<!-- CART PANEL -->
+<!-- CART -->
+<div id="cart-box">
   <h3>Your Cart</h3>
-<div id="cart-items"></div>
-<p id="cart-total"></p>
-  <button onclick="addToCart('Agarbatti', 100)">Add to Cart</button>
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script src="script.js"></script>
+  <div id="cart-items"></div>
+  <p id="cart-total"></p>
+  <button onclick="checkout()">Checkout</button>
+</div>
+
+<script src="script.js"></script>
+
 </body>
 </html>
