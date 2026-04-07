@@ -1,206 +1,99 @@
 const express = require("express");
-const cors = require("cors");
-const fs = require("fs");
-const multer = require("multer");
-const path = require("path");
 const Razorpay = require("razorpay");
-const jwt = require("jsonwebtoken");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const fs = require("fs");
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
-// ===== CONFIG =====
-const PORT = 5000;
-const JWT_SECRET = "mysecretkey";
-
-// ===== FILE PATHS =====
-const PRODUCTS_FILE = "products.json";
-const ORDERS_FILE = "orders.json";
-
-// ===== INIT FILES =====
-if (!fs.existsSync(PRODUCTS_FILE)) fs.writeFileSync(PRODUCTS_FILE, "[]");
-if (!fs.existsSync(ORDERS_FILE)) fs.writeFileSync(ORDERS_FILE, "[]");
-
-// ===== SERVE UPLOADS =====
-app.use("/uploads", express.static("uploads"));
-
-// ===== MULTER (IMAGE UPLOAD) =====
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    if (!fs.existsSync("uploads")) fs.mkdirSync("uploads");
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-const upload = multer({ storage });
-
-// ===== RAZORPAY =====
+// Razorpay config
 const razorpay = new Razorpay({
-  key_id: "YOUR_KEY_ID",
-  key_secret: "YOUR_KEY_SECRET",
+  key_id: "rzp_test_xxxxxxxx",
+  key_secret: "your_secret_key"
 });
 
-// ===== HELPERS =====
-function readJSON(file) {
-  return JSON.parse(fs.readFileSync(file));
-}
-function writeJSON(file, data) {
-  fs.writeFileSync(file, JSON.stringify(data, null, 2));
-}
-
-// ===== ADMIN LOGIN =====
-app.post("/admin/login", (req, res) => {
-  const { username, password } = req.body;
-
-  if (username === "admin" && password === "admin123") {
-    const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: "1d" });
-    return res.json({ token });
-  }
-
-  res.status(401).json({ message: "Invalid credentials" });
-});
-
-// ===== AUTH MIDDLEWARE =====
-function verifyToken(req, res, next) {
-  const token = req.headers["authorization"];
-  if (!token) return res.status(403).json({ message: "No token" });
-
-  try {
-    jwt.verify(token, JWT_SECRET);
-    next();
-  } catch {
-    res.status(401).json({ message: "Invalid token" });
-  }
-}
-
-// ===== UPLOAD IMAGE =====
-app.post("/upload", verifyToken, upload.single("image"), (req, res) => {
-  res.json({ imageUrl: `/uploads/${req.file.filename}` });
-});
-
-// ===== PRODUCTS =====
-
-// GET PRODUCTS
-app.get("/products", (req, res) => {
-  const products = readJSON(PRODUCTS_FILE);
-  res.json(products);
-});
-
-// ADD PRODUCT
-app.post("/products", verifyToken, (req, res) => {
-  const products = readJSON(PRODUCTS_FILE);
-
-  const newProduct = {
-    id: Date.now(),
-    name: req.body.name,
-    price: req.body.price,
-    image: req.body.image,
-  };
-
-  products.push(newProduct);
-  writeJSON(PRODUCTS_FILE, products);
-
-  res.json({ message: "Product added", product: newProduct });
-});
-
-// DELETE PRODUCT
-app.delete("/products/:id", verifyToken, (req, res) => {
-  let products = readJSON(PRODUCTS_FILE);
-  products = products.filter((p) => p.id != req.params.id);
-
-  writeJSON(PRODUCTS_FILE, products);
-  res.json({ message: "Deleted" });
-});
-
-// ===== CREATE ORDER =====
+// CREATE ORDER
 app.post("/create-order", async (req, res) => {
-  const { cart, address } = req.body;
+  const { amount } = req.body;
 
-  let total = 0;
-  cart.forEach((item) => {
-    total += item.price * item.quantity;
-  });
-
-  // DELIVERY LOGIC
-  const state = address.state.toLowerCase();
-  let delivery = 199;
-
-  if (state.includes("andhra") || state.includes("telangana")) {
-    delivery = 99;
-  }
-
-  total += delivery;
-
-  try {
-    const order = await razorpay.orders.create({
-      amount: total * 100,
-      currency: "INR",
-    });
-
-    res.json({
-      orderId: order.id,
-      amount: total,
-      delivery,
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ===== SAVE ORDER AFTER PAYMENT =====
-app.post("/verify-payment", (req, res) => {
-  const { cart, address, paymentId } = req.body;
-
-  const orders = readJSON(ORDERS_FILE);
-
-  const newOrder = {
-    id: "ORD" + Date.now(),
-    cart,
-    address,
-    paymentId,
-    status: "Placed",
-    date: new Date(),
+  const options = {
+    amount: amount * 100,
+    currency: "INR"
   };
 
-  orders.push(newOrder);
-  writeJSON(ORDERS_FILE, orders);
-
-  res.json({ message: "Order saved", order: newOrder });
-});
-
-// ===== GET ALL ORDERS (ADMIN) =====
-app.get("/orders", verifyToken, (req, res) => {
-  const orders = readJSON(ORDERS_FILE);
-  res.json(orders);
-});
-
-// ===== TRACK ORDER =====
-app.get("/track/:id", (req, res) => {
-  const orders = readJSON(ORDERS_FILE);
-  const order = orders.find((o) => o.id === req.params.id);
-
-  if (!order) return res.status(404).json({ message: "Not found" });
-
+  const order = await razorpay.orders.create(options);
   res.json(order);
 });
 
-// ===== UPDATE ORDER STATUS =====
-app.put("/orders/:id", verifyToken, (req, res) => {
-  const orders = readJSON(ORDERS_FILE);
+// SAVE ORDER
+app.post("/save-order", (req, res) => {
+  const order = req.body;
 
-  const order = orders.find((o) => o.id === req.params.id);
-  if (!order) return res.status(404).json({ message: "Not found" });
+  let orders = [];
 
-  order.status = req.body.status;
-  writeJSON(ORDERS_FILE, orders);
+  if (fs.existsSync("orders.json")) {
+    orders = JSON.parse(fs.readFileSync("orders.json"));
+  }
+
+  orders.push(order);
+
+  fs.writeFileSync("orders.json", JSON.stringify(orders, null, 2));
+
+  res.json({ message: "Order saved" });
+});
+
+// GET ORDERS (ADMIN)
+app.get("/orders", (req, res) => {
+  if (!fs.existsSync("orders.json")) return res.json([]);
+
+  const orders = JSON.parse(fs.readFileSync("orders.json"));
+  res.json(orders);
+});
+
+// UPDATE STATUS
+app.post("/update-status", (req, res) => {
+  const { index, status } = req.body;
+
+  let orders = JSON.parse(fs.readFileSync("orders.json"));
+
+  orders[index].status = status;
+
+  fs.writeFileSync("orders.json", JSON.stringify(orders, null, 2));
 
   res.json({ message: "Updated" });
 });
 
-// ===== START SERVER =====
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+app.listen(5000, () => console.log("Server running"));
+async function trackOrder() {
+  const phone = document.getElementById("trackPhone").value;
+
+  if (!phone) {
+    alert("Enter phone number");
+    return;
+  }
+
+  const res = await fetch("http://localhost:5000/orders");
+  const data = await res.json();
+
+  const userOrders = data.filter(o => o.phone === phone);
+
+  let html = "";
+
+  if (userOrders.length === 0) {
+    html = "<p>No orders found</p>";
+  } else {
+    userOrders.forEach(o => {
+      html += `
+        <div style="border:1px solid #ccc; padding:10px; margin:10px;">
+          <p><b>Amount:</b> ₹${o.total}</p>
+          <p><b>Status:</b> ${o.status}</p>
+          <p><b>Address:</b> ${o.address}</p>
+        </div>
+      `;
+    });
+  }
+
+  document.getElementById("result").innerHTML = html;
+}
