@@ -1,74 +1,55 @@
-// =======================
-// 🛒 CART SYSTEM
-// =======================
 let cart = [];
 
 // ADD TO CART
 function addToCart(name, price) {
-  const existing = cart.find(item => item.name === name);
+  let item = cart.find(p => p.name === name);
 
-  if (existing) {
-    existing.quantity++;
+  if (item) {
+    item.qty++;
   } else {
-    cart.push({ name, price, quantity: 1 });
+    cart.push({ name, price, qty: 1 });
   }
 
-  console.log("Cart:", cart);
   updateCartUI();
 }
 
-// UPDATE CART UI
+// UPDATE CART
 function updateCartUI() {
-  const container = document.getElementById("cart-items");
-  const totalEl = document.getElementById("cart-total");
+  let cartItems = document.getElementById("cart-items");
+  let total = document.getElementById("cart-total");
 
-  if (!container) {
-    console.error("cart-items not found ❌");
-    return;
-  }
+  cartItems.innerHTML = "";
 
-  container.innerHTML = "";
+  let totalPrice = 0;
 
-  let total = 0;
+  cart.forEach(item => {
+    totalPrice += item.price * item.qty;
 
-  cart.forEach((item, index) => {
-    total += item.price * item.quantity;
-
-    container.innerHTML += `
-      <div>
-        ${item.name} - ₹${item.price} x ${item.quantity}
-        <button onclick="increaseQty(${index})">+</button>
-        <button onclick="decreaseQty(${index})">-</button>
-      </div>
+    cartItems.innerHTML += `
+      <p>${item.name} - ₹${item.price} x ${item.qty}</p>
     `;
   });
 
-  if (totalEl) {
-    totalEl.innerText = "Total: ₹" + total;
-  }
+  total.innerText = "Total: ₹" + totalPrice;
 }
 
-// INCREASE QTY
-function increaseQty(index) {
-  cart[index].quantity++;
-  updateCartUI();
-}
-
-// DECREASE QTY
-function decreaseQty(index) {
-  if (cart[index].quantity > 1) {
-    cart[index].quantity--;
-  } else {
-    cart.splice(index, 1);
-  }
-  updateCartUI();
-}
+// TOGGLE CART
 function toggleCart() {
-  const cart = document.getElementById("cart-box");
+  let cartBox = document.getElementById("cart-box");
 
-  if (cart.style.display === "none") {
-    cart.style.display = "block";
+  if (cartBox.style.display === "none") {
+    cartBox.style.display = "block";
   } else {
-    cart.style.display = "none";
+    cartBox.style.display = "none";
   }
+}
+
+// CHECKOUT
+function checkout() {
+  if (cart.length === 0) {
+    alert("Cart is empty!");
+    return;
+  }
+
+  alert("Proceeding to payment...");
 }
