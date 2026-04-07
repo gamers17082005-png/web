@@ -1,137 +1,136 @@
-// CART ARRAY
+// =======================
+// 🛒 CART SYSTEM
+// =======================
 let cart = [];
 
 // ADD TO CART
 function addToCart(name, price) {
-  let existing = cart.find(item => item.name === name);
+  const existing = cart.find(item => item.name === name);
 
   if (existing) {
-    existing.qty += 1;
+    existing.quantity++;
   } else {
-    cart.push({ name, price, qty: 1 });
+    cart.push({ name, price, quantity: 1 });
   }
 
-  updateCartCount();
+  console.log("Cart:", cart);
+  updateCartUI();
 }
 
-// UPDATE CART COUNT
-function updateCartCount() {
-  let count = cart.reduce((sum, item) => sum + item.qty, 0);
-  document.getElementById("cart-count").innerText = count;
-}
+// UPDATE CART UI
+function updateCartUI() {
+  const container = document.getElementById("cart-items");
+  const totalEl = document.getElementById("cart-total");
 
-// TOGGLE CART
-function toggleCart() {
-  let panel = document.getElementById("cart-panel");
+  if (!container) return;
 
-  if (panel.style.right === "" || panel.style.right === "-300px") {
-    panel.style.right = "0px";
-  } else {
-    panel.style.right = "-300px";
-  }
-
-  renderCart();
-}
-
-// RENDER CART
-function renderCart() {
-  let panel = document.getElementById("cart-panel");
-
-  if (cart.length === 0) {
-    panel.innerHTML = "<h2>Your Cart</h2><p>Cart is empty</p>";
-    return;
-  }
+  container.innerHTML = "";
 
   let total = 0;
-  panel.innerHTML = "<h2>Your Cart</h2>";
 
   cart.forEach((item, index) => {
-    total += item.price * item.qty;
+    total += item.price * item.quantity;
 
-    panel.innerHTML += `
-      <div style="margin-bottom:10px;">
-        <p>${item.name} - ₹${item.price}</p>
-        <button onclick="decreaseQty(${index})">−</button>
-        ${item.qty}
+    container.innerHTML += `
+      <div>
+        ${item.name} - ₹${item.price} x ${item.quantity}
         <button onclick="increaseQty(${index})">+</button>
-        <button onclick="removeItem(${index})">❌</button>
+        <button onclick="decreaseQty(${index})">-</button>
       </div>
     `;
   });
 
-  panel.innerHTML += `<h3>Total: ₹${total}</h3>`;
-  panel.innerHTML += `<button onclick="checkout()">Checkout</button>`;
+  if (totalEl) {
+    totalEl.innerText = "Total: ₹" + total;
+  }
 }
 
 // INCREASE QTY
 function increaseQty(index) {
-  cart[index].qty++;
-  updateCartCount();
-  renderCart();
+  cart[index].quantity++;
+  updateCartUI();
 }
 
 // DECREASE QTY
 function decreaseQty(index) {
-  if (cart[index].qty > 1) {
-    cart[index].qty--;
+  if (cart[index].quantity > 1) {
+    cart[index].quantity--;
   } else {
     cart.splice(index, 1);
   }
-
-  updateCartCount();
-  renderCart();
-}
-
-// REMOVE ITEM
-function removeItem(index) {
-  cart.splice(index, 1);
-  updateCartCount();
-  renderCart();
-}
-
-// CHECKOUT
-async function checkout() {
-  const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-  console.log("Checkout clicked, amount:", totalAmount);
-
-  // Call backend
-  const response = await fetch("http://localhost:5000/create-order", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ amount: totalAmount })
-  });
-
-  const order = await response.json();
-
-  console.log("Order created:", order);
-
-  // Open Razorpay
- handler: async function (response) {
-  alert("Payment Successful!");
-
-  // Save order to backend
-  await fetch("http://localhost:5000/save-order", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      payment_id: response.razorpay_payment_id,
-      cart: cart,
-      total: totalAmount,
-      date: new Date()
-    })
-  });
-
-  cart = [];
   updateCartUI();
 }
-// SCROLL
-function scrollToProducts() {
-  document.getElementById("products").scrollIntoView({
-    behavior: "smooth"
-  });
+
+// =======================
+// 💳 CHECKOUT + PAYMENT
+// =======================
+async function checkout() {
+  if (cart.length === 0) {
+    alert("Cart is empty!");
+    return;
+  }
+
+  const totalAmount = cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+
+  console.log("Checkout amount:", totalAmount);
+
+  try {
+    // CREATE ORDER FROM BACKEND
+    const res = await fetch("http://localhost:5000/create-order", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ amount: totalAmount })
+    });
+
+    const order = await res.json();
+    console.log("Order:", order);
+
+    // RAZORPAY OPTIONS
+    const options = {
+      key: "rzp_test_xxxxxxxx", // 🔴 replace with your key
+      amount: order.amount,
+      currency: "INR",
+      name: "HSV Sugandhika",
+      description: "Pooja Items",
+      order_id: order.id,
+
+      handler: async function (response) {
+        alert("Payment Successful!");
+
+        // SAVE ORDER
+        await fetch("http://localhost:5000/save-order", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            payment_id: response.razorpay_payment_id,
+            cart: cart,
+            total: totalAmount,
+            date: new Date()
+          })
+        });
+
+        // CLEAR CART
+        cart = [];
+        updateCartUI();
+      },
+
+      theme: {
+        color: "#FF7A00"
+      }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+
+  } catch (err) {
+    console.error("Checkout error:", err);
+    alert("Payment failed!");
+  }
 }
