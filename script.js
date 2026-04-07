@@ -109,24 +109,25 @@ async function checkout() {
   console.log("Order created:", order);
 
   // Open Razorpay
-  const options = {
-    key: "YOUR_KEY_ID", // same as server
-    amount: order.amount,
-    currency: "INR",
-    name: "HSV Sugandhika",
-    description: "Pooja Items Purchase",
-    order_id: order.id,
-    handler: function (response) {
-      alert("Payment Successful!");
-      console.log(response);
-    },
-    theme: {
-      color: "#FF7A00"
-    }
-  };
+ handler: async function (response) {
+  alert("Payment Successful!");
 
-  const rzp = new Razorpay(options);
-  rzp.open();
+  // Save order to backend
+  await fetch("http://localhost:5000/save-order", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      payment_id: response.razorpay_payment_id,
+      cart: cart,
+      total: totalAmount,
+      date: new Date()
+    })
+  });
+
+  cart = [];
+  updateCartUI();
 }
 // SCROLL
 function scrollToProducts() {
