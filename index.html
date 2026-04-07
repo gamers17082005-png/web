@@ -2,53 +2,143 @@
 <html>
 <head>
   <title>HSV Sugandhika</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial;
+      margin: 0;
+      background: #f5f5f5;
+    }
+
+    /* NAVBAR */
+    .navbar {
+      background: #ff7a00;
+      color: white;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(to right, #ff7a00, #d4af37);
+      color: white;
+      padding: 40px;
+      text-align: center;
+    }
+
+    /* PRODUCTS GRID */
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+
+    .btn {
+      background: #ff7a00;
+      color: white;
+      border: none;
+      padding: 10px;
+      width: 100%;
+      margin-top: 10px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .btn:hover {
+      background: #e66a00;
+    }
+
+    /* CART */
+    .cart {
+      position: fixed;
+      right: 0;
+      top: 0;
+      width: 300px;
+      height: 100%;
+      background: white;
+      box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+      padding: 15px;
+      overflow-y: auto;
+    }
+
+    input, select {
+      width: 95%;
+      padding: 10px;
+      margin: 5px 0;
+    }
+
+  </style>
 </head>
 
 <body>
 
-<h1>🛍️ HSV Sugandhika Store</h1>
+<!-- NAVBAR -->
+<div class="navbar">
+  <div class="logo">HSV Sugandhika</div>
+  <div onclick="toggleCart()">🛒 Cart (<span id="count">0</span>)</div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Spiritual Essentials</h1>
+  <p>From Nature’s Heart 🌿</p>
+</div>
 
 <!-- PRODUCTS -->
-<h2>Products</h2>
-<div id="products"></div>
+<div class="products" id="products"></div>
 
-<!-- CART -->
-<h2>Cart</h2>
-<div id="cart"></div>
+<!-- CART PANEL -->
+<div class="cart" id="cartPanel" style="display:none;">
+  <h2>Your Cart</h2>
+  <div id="cart"></div>
 
-<!-- ADDRESS -->
-<h2>Delivery Details</h2>
-<input id="name" placeholder="Name"><br><br>
-<input id="phone" placeholder="Phone"><br><br>
-<input id="address" placeholder="Address"><br><br>
+  <h3>Delivery Details</h3>
+  <input id="name" placeholder="Name">
+  <input id="phone" placeholder="Phone">
+  <input id="address" placeholder="Address">
 
-<select id="state">
-  <option>Andhra Pradesh</option>
-  <option>Telangana</option>
-  <option>Karnataka</option>
-  <option>Tamil Nadu</option>
-  <option>Other</option>
-</select><br><br>
+  <select id="state">
+    <option>Andhra Pradesh</option>
+    <option>Telangana</option>
+    <option>Karnataka</option>
+    <option>Tamil Nadu</option>
+    <option>Other</option>
+  </select>
 
-<button onclick="checkout()">Proceed to Payment</button>
-
-<hr>
-
-<!-- TRACK ORDER -->
-<h2>Track Order</h2>
-<input id="trackPhone" placeholder="Enter Phone Number">
-<button onclick="trackOrder()">Track</button>
-
-<div id="trackingResult"></div>
+  <button class="btn" onclick="checkout()">Pay Now</button>
+</div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
-const BASE = "https://your-app.onrender.com"; // CHANGE THIS
+const BASE = "https://your-app.onrender.com"; // CHANGE
 
 let cart = [];
 
-// ================= LOAD PRODUCTS =================
+// LOAD PRODUCTS
 async function loadProducts() {
   const res = await fetch(BASE + "/products");
   const data = await res.json();
@@ -57,11 +147,11 @@ async function loadProducts() {
 
   data.forEach((p, i) => {
     html += `
-      <div style="border:1px solid #ccc; margin:10px; padding:10px;">
-        <img src="${p.image}" width="120"><br>
-        <b>${p.name}</b><br>
-        ₹${p.price}<br><br>
-        <button onclick="addToCart(${i})">Add to Cart</button>
+      <div class="card">
+        <img src="${p.image}">
+        <h3>${p.name}</h3>
+        <p>₹${p.price}</p>
+        <button class="btn" onclick="addToCart(${i})">Add to Cart</button>
       </div>
     `;
   });
@@ -69,7 +159,7 @@ async function loadProducts() {
   document.getElementById("products").innerHTML = html;
 }
 
-// ================= ADD TO CART =================
+// ADD TO CART
 async function addToCart(i) {
   const res = await fetch(BASE + "/products");
   const data = await res.json();
@@ -78,13 +168,7 @@ async function addToCart(i) {
   updateCart();
 }
 
-// ================= REMOVE FROM CART =================
-function removeFromCart(index) {
-  cart.splice(index, 1);
-  updateCart();
-}
-
-// ================= UPDATE CART =================
+// UPDATE CART
 function updateCart() {
   let html = "";
   let total = 0;
@@ -95,7 +179,7 @@ function updateCart() {
     html += `
       <div>
         ${item.name} - ₹${item.price}
-        <button onclick="removeFromCart(${i})">❌</button>
+        <button onclick="removeItem(${i})">❌</button>
       </div>
     `;
   });
@@ -103,24 +187,27 @@ function updateCart() {
   html += `<h3>Total: ₹${total}</h3>`;
 
   document.getElementById("cart").innerHTML = html;
+  document.getElementById("count").innerText = cart.length;
 }
 
-// ================= CHECKOUT =================
-async function checkout() {
-  if (cart.length === 0) {
-    alert("Cart is empty!");
-    return;
-  }
+// REMOVE ITEM
+function removeItem(i) {
+  cart.splice(i, 1);
+  updateCart();
+}
 
+// TOGGLE CART
+function toggleCart() {
+  const panel = document.getElementById("cartPanel");
+  panel.style.display = panel.style.display === "none" ? "block" : "none";
+}
+
+// CHECKOUT
+async function checkout() {
   const name = document.getElementById("name").value;
   const phone = document.getElementById("phone").value;
   const address = document.getElementById("address").value;
   const state = document.getElementById("state").value;
-
-  if (!name || !phone || !address) {
-    alert("Fill all details");
-    return;
-  }
 
   let amount = 0;
   cart.forEach(i => amount += Number(i.price));
@@ -136,59 +223,24 @@ async function checkout() {
   const options = {
     key: "YOUR_RAZORPAY_KEY",
     amount: data.order.amount,
-    currency: "INR",
     order_id: data.order.id,
 
     handler: async function () {
-
       await fetch(BASE + "/save-order", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
-          name,
-          phone,
-          address,
-          state,
-          cart,
-          total: data.total
+          name, phone, address, state, cart, total: data.total
         })
       });
 
-      alert("✅ Order placed successfully!");
-
+      alert("Order Placed!");
       cart = [];
       updateCart();
     }
   };
 
-  const rzp = new Razorpay(options);
-  rzp.open();
-}
-
-// ================= TRACK ORDER =================
-async function trackOrder() {
-  const phone = document.getElementById("trackPhone").value;
-
-  const res = await fetch(BASE + "/track-order?phone=" + phone);
-  const data = await res.json();
-
-  let html = "";
-
-  if (data.length === 0) {
-    html = "No orders found";
-  } else {
-    data.forEach(o => {
-      html += `
-        <div style="border:1px solid green; margin:10px; padding:10px;">
-          <b>${o.name}</b><br>
-          ₹${o.total}<br>
-          Status: <b>${o.status}</b>
-        </div>
-      `;
-    });
-  }
-
-  document.getElementById("trackingResult").innerHTML = html;
+  new Razorpay(options).open();
 }
 
 loadProducts();
