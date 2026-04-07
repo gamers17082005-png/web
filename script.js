@@ -90,23 +90,31 @@ function removeItem(index) {
 }
 
 // CHECKOUT
-function checkout() {
+async function checkout() {
   let total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
+  const response = await fetch("http://localhost:5000/create-order", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ amount: total })
+  });
+
+  const order = await response.json();
+
   let options = {
-    key: "YOUR_KEY_ID", // replace this
-    amount: total * 100, // in paise
+    key: "YOUR_KEY_ID",
+    amount: order.amount,
     currency: "INR",
+    order_id: order.id,
     name: "HSV Sugandhika",
-    description: "Pooja Items Purchase",
+    description: "Pooja Items",
     handler: function (response) {
-      alert("Payment Successful! 🎉");
+      alert("Payment Successful 🎉");
       cart = [];
       updateCartCount();
       renderCart();
-    },
-    theme: {
-      color: "#FF7A00"
     }
   };
 
