@@ -1,131 +1,67 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Admin Dashboard</title>
-  <style>
-    body {
-      font-family: Arial;
-      background: #f5f5f5;
-      margin: 0;
-    }
-
-    .login-box, .dashboard {
-      max-width: 400px;
-      margin: 80px auto;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-    }
-
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #FF7A00;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    .dashboard {
-      display: none;
-      max-width: 800px;
-    }
-
-    .order {
-      border: 1px solid #ccc;
-      margin: 10px 0;
-      padding: 10px;
-      border-radius: 8px;
-      background: #fff;
-    }
-  </style>
+  <title>Admin Panel</title>
 </head>
 <body>
 
-<!-- LOGIN BOX -->
-<div class="login-box" id="loginBox">
-  <h2>Admin Login</h2>
-  <input type="text" id="username" placeholder="Username">
-  <input type="password" id="password" placeholder="Password">
-  <button onclick="login()">Login</button>
-</div>
+<h2>Admin Login</h2>
 
-<!-- DASHBOARD -->
-<div class="dashboard" id="dashboard">
-  <h2>Admin Dashboard</h2>
-  <button onclick="logout()">Logout</button>
-  <h3>All Orders</h3>
+<input id="user" placeholder="Username"><br><br>
+<input id="pass" type="password" placeholder="Password"><br><br>
+
+<button onclick="login()">Login</button>
+
+<div id="dashboard" style="display:none;">
+  <h2>Orders</h2>
   <div id="orders"></div>
 </div>
 
 <script>
-  const ADMIN_USER = "admin";
-  const ADMIN_PASS = "1234";
+function login() {
+  const u = document.getElementById("user").value;
+  const p = document.getElementById("pass").value;
 
-  function login() {
-    const user = document.getElementById("username").value;
-    const pass = document.getElementById("password").value;
-
-    if (user === ADMIN_USER && pass === ADMIN_PASS) {
-      localStorage.setItem("adminLoggedIn", "true");
-
-      document.getElementById("loginBox").style.display = "none";
-      document.getElementById("dashboard").style.display = "block";
-
-      loadOrders();
-    } else {
-      alert("Invalid credentials");
-    }
-  }
-
-  function logout() {
-    localStorage.removeItem("adminLoggedIn");
-    location.reload();
-  }
-
-  // Auto login if already logged in
-  if (localStorage.getItem("adminLoggedIn") === "true") {
-    document.getElementById("loginBox").style.display = "none";
+  if (u === "admin" && p === "1234") {
     document.getElementById("dashboard").style.display = "block";
     loadOrders();
+  } else {
+    alert("Wrong login");
   }
+}
 
-  async function loadOrders() {
-    try {
-      const res = await fetch("http://localhost:5000/orders");
-      const data = await res.json();
+async function loadOrders() {
+  const res = await fetch("http://localhost:5000/orders");
+  const data = await res.json();
 
-      let html = "";
+  let html = "";
 
-      data.forEach(order => {
-        html += `
-          <div class="order">
-            <p><b>Payment ID:</b> ${order.payment_id}</p>
-            <p><b>Total:</b> ₹${order.total}</p>
-            <p><b>Date:</b> ${new Date(order.date).toLocaleString()}</p>
+  data.forEach((o, i) => {
+    html += `
+      <div style="border:1px solid #ccc; padding:10px; margin:10px;">
+        <p><b>${o.name}</b> (${o.phone})</p>
+        <p>${o.address}, ${o.state}</p>
+        <p>Total: ₹${o.total}</p>
+        <p>Status: ${o.status}</p>
 
-            <p><b>Items:</b></p>
-            <ul>
-              ${order.cart.map(item => `<li>${item.name} - Qty: ${item.quantity}</li>`).join("")}
-            </ul>
-          </div>
-        `;
-      });
+        <button onclick="update(${i}, 'Shipped')">Ship</button>
+        <button onclick="update(${i}, 'Delivered')">Deliver</button>
+      </div>
+    `;
+  });
 
-      document.getElementById("orders").innerHTML = html;
+  document.getElementById("orders").innerHTML = html;
+}
 
-    } catch (err) {
-      console.error(err);
-      alert("Error loading orders");
-    }
-  }
+async function update(index, status) {
+  await fetch("http://localhost:5000/update-status", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ index, status })
+  });
+
+  loadOrders();
+}
 </script>
 
 </body>
