@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Shop</title>
+  <title>HSV Sugandhika</title>
 </head>
 
 <body>
 
-<h1>Products</h1>
+<h1>🛍️ HSV Sugandhika Store</h1>
+
+<!-- PRODUCTS -->
+<h2>Products</h2>
 <div id="products"></div>
 
+<!-- CART -->
 <h2>Cart</h2>
 <div id="cart"></div>
 
-<h2>Address</h2>
+<!-- ADDRESS -->
+<h2>Delivery Details</h2>
 <input id="name" placeholder="Name"><br><br>
 <input id="phone" placeholder="Phone"><br><br>
 <input id="address" placeholder="Address"><br><br>
@@ -22,9 +27,19 @@
   <option>Telangana</option>
   <option>Karnataka</option>
   <option>Tamil Nadu</option>
+  <option>Other</option>
 </select><br><br>
 
-<button onclick="checkout()">Pay Now</button>
+<button onclick="checkout()">Proceed to Payment</button>
+
+<hr>
+
+<!-- TRACK ORDER -->
+<h2>Track Order</h2>
+<input id="trackPhone" placeholder="Enter Phone Number">
+<button onclick="trackOrder()">Track</button>
+
+<div id="trackingResult"></div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
@@ -33,7 +48,7 @@ const BASE = "https://your-app.onrender.com"; // CHANGE THIS
 
 let cart = [];
 
-// LOAD PRODUCTS
+// ================= LOAD PRODUCTS =================
 async function loadProducts() {
   const res = await fetch(BASE + "/products");
   const data = await res.json();
@@ -42,9 +57,10 @@ async function loadProducts() {
 
   data.forEach((p, i) => {
     html += `
-      <div>
-        <img src="${p.image}" width="100">
-        <p>${p.name} - ₹${p.price}</p>
+      <div style="border:1px solid #ccc; margin:10px; padding:10px;">
+        <img src="${p.image}" width="120"><br>
+        <b>${p.name}</b><br>
+        ₹${p.price}<br><br>
         <button onclick="addToCart(${i})">Add to Cart</button>
       </div>
     `;
@@ -53,24 +69,35 @@ async function loadProducts() {
   document.getElementById("products").innerHTML = html;
 }
 
-// ADD TO CART
-function addToCart(i) {
-  fetch(BASE + "/products")
-    .then(res => res.json())
-    .then(data => {
-      cart.push(data[i]);
-      updateCart();
-    });
+// ================= ADD TO CART =================
+async function addToCart(i) {
+  const res = await fetch(BASE + "/products");
+  const data = await res.json();
+
+  cart.push(data[i]);
+  updateCart();
 }
 
-// UPDATE CART
+// ================= REMOVE FROM CART =================
+function removeFromCart(index) {
+  cart.splice(index, 1);
+  updateCart();
+}
+
+// ================= UPDATE CART =================
 function updateCart() {
   let html = "";
   let total = 0;
 
-  cart.forEach((item) => {
+  cart.forEach((item, i) => {
     total += Number(item.price);
-    html += `<p>${item.name} - ₹${item.price}</p>`;
+
+    html += `
+      <div>
+        ${item.name} - ₹${item.price}
+        <button onclick="removeFromCart(${i})">❌</button>
+      </div>
+    `;
   });
 
   html += `<h3>Total: ₹${total}</h3>`;
@@ -78,12 +105,22 @@ function updateCart() {
   document.getElementById("cart").innerHTML = html;
 }
 
-// CHECKOUT
+// ================= CHECKOUT =================
 async function checkout() {
+  if (cart.length === 0) {
+    alert("Cart is empty!");
+    return;
+  }
+
   const name = document.getElementById("name").value;
   const phone = document.getElementById("phone").value;
   const address = document.getElementById("address").value;
   const state = document.getElementById("state").value;
+
+  if (!name || !phone || !address) {
+    alert("Fill all details");
+    return;
+  }
 
   let amount = 0;
   cart.forEach(i => amount += Number(i.price));
@@ -103,6 +140,7 @@ async function checkout() {
     order_id: data.order.id,
 
     handler: async function () {
+
       await fetch(BASE + "/save-order", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
@@ -116,12 +154,41 @@ async function checkout() {
         })
       });
 
-      alert("Order placed!");
+      alert("✅ Order placed successfully!");
+
+      cart = [];
+      updateCart();
     }
   };
 
   const rzp = new Razorpay(options);
   rzp.open();
+}
+
+// ================= TRACK ORDER =================
+async function trackOrder() {
+  const phone = document.getElementById("trackPhone").value;
+
+  const res = await fetch(BASE + "/track-order?phone=" + phone);
+  const data = await res.json();
+
+  let html = "";
+
+  if (data.length === 0) {
+    html = "No orders found";
+  } else {
+    data.forEach(o => {
+      html += `
+        <div style="border:1px solid green; margin:10px; padding:10px;">
+          <b>${o.name}</b><br>
+          ₹${o.total}<br>
+          Status: <b>${o.status}</b>
+        </div>
+      `;
+    });
+  }
+
+  document.getElementById("trackingResult").innerHTML = html;
 }
 
 loadProducts();
