@@ -91,6 +91,7 @@ function removeItem(index) {
 
 // CHECKOUT
 async function checkout() {
+  console.log("Checkout clicked");
   let total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
   const response = await fetch("http://localhost:5000/create-order", {
