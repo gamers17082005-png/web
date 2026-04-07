@@ -121,7 +121,6 @@ async function checkout() {
   let rzp = new Razorpay(options);
   rzp.open();
 }
-
 // SCROLL
 function scrollToProducts() {
   document.getElementById("products").scrollIntoView({
