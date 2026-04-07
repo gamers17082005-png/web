@@ -2,27 +2,26 @@ const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
 const Razorpay = require("razorpay");
-const jwt = require("jsonwebtoken");
 const multer = require("multer");
+const jwt = require("jsonwebtoken");
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// ================== CONFIG ==================
+// ================= CONFIG =================
 const SECRET = "mysecretkey";
 
-// Razorpay
 const razorpay = new Razorpay({
-  key_id: "YOUR_RAZORPAY_KEY_ID",
-  key_secret: "YOUR_RAZORPAY_KEY_SECRET"
+  key_id: "YOUR_RAZORPAY_KEY",
+  key_secret: "YOUR_RAZORPAY_SECRET"
 });
 
-// ================== FILE SETUP ==================
-if (!fs.existsSync("orders.json")) fs.writeFileSync("orders.json", "[]");
+// ================= FILES =================
 if (!fs.existsSync("products.json")) fs.writeFileSync("products.json", "[]");
+if (!fs.existsSync("orders.json")) fs.writeFileSync("orders.json", "[]");
 
-// ================== IMAGE UPLOAD ==================
+// ================= UPLOAD =================
 if (!fs.existsSync("uploads")) fs.mkdirSync("uploads");
 
 const storage = multer.diskStorage({
@@ -35,7 +34,7 @@ const upload = multer({ storage });
 
 app.use("/uploads", express.static("uploads"));
 
-// ================== AUTH ==================
+// ================= AUTH =================
 function verifyToken(req, res, next) {
   const token = req.headers["authorization"];
   if (!token) return res.status(403).send("No token");
@@ -46,7 +45,7 @@ function verifyToken(req, res, next) {
   });
 }
 
-// ================== ADMIN LOGIN ==================
+// ================= ADMIN LOGIN =================
 app.post("/admin-login", (req, res) => {
   const { username, password } = req.body;
 
@@ -58,7 +57,40 @@ app.post("/admin-login", (req, res) => {
   }
 });
 
-// ================== CREATE ORDER (RAZORPAY) ==================
+// ================= PRODUCTS =================
+app.get("/products", (req, res) => {
+  const products = JSON.parse(fs.readFileSync("products.json"));
+  res.json(products);
+});
+
+app.post("/add-product", verifyToken, (req, res) => {
+  const { name, price, image } = req.body;
+
+  let products = JSON.parse(fs.readFileSync("products.json"));
+  products.push({ name, price, image });
+
+  fs.writeFileSync("products.json", JSON.stringify(products, null, 2));
+
+  res.json({ message: "Product added" });
+});
+
+app.post("/delete-product", verifyToken, (req, res) => {
+  const { index } = req.body;
+
+  let products = JSON.parse(fs.readFileSync("products.json"));
+  products.splice(index, 1);
+
+  fs.writeFileSync("products.json", JSON.stringify(products, null, 2));
+
+  res.json({ message: "Deleted" });
+});
+
+// ================= IMAGE UPLOAD =================
+app.post("/upload", upload.single("image"), (req, res) => {
+  res.json({ image: req.file.filename });
+});
+
+// ================= CREATE ORDER =================
 app.post("/create-order", async (req, res) => {
   try {
     const { amount, state } = req.body;
@@ -84,7 +116,7 @@ app.post("/create-order", async (req, res) => {
   }
 });
 
-// ================== SAVE ORDER ==================
+// ================= SAVE ORDER =================
 app.post("/save-order", (req, res) => {
   const order = req.body;
 
@@ -98,18 +130,16 @@ app.post("/save-order", (req, res) => {
   res.json({ message: "Order saved" });
 });
 
-// ================== GET ORDERS ==================
+// ================= ADMIN =================
 app.get("/orders", verifyToken, (req, res) => {
   const orders = JSON.parse(fs.readFileSync("orders.json"));
   res.json(orders);
 });
 
-// ================== UPDATE ORDER STATUS ==================
 app.post("/update-status", verifyToken, (req, res) => {
   const { index, status } = req.body;
 
   let orders = JSON.parse(fs.readFileSync("orders.json"));
-
   orders[index].status = status;
 
   fs.writeFileSync("orders.json", JSON.stringify(orders, null, 2));
@@ -117,46 +147,7 @@ app.post("/update-status", verifyToken, (req, res) => {
   res.json({ message: "Updated" });
 });
 
-// ================== PRODUCTS ==================
-
-// GET PRODUCTS
-app.get("/products", (req, res) => {
-  const products = JSON.parse(fs.readFileSync("products.json"));
-  res.json(products);
-});
-
-// ADD PRODUCT
-app.post("/add-product", verifyToken, (req, res) => {
-  const product = req.body;
-
-  let products = JSON.parse(fs.readFileSync("products.json"));
-
-  products.push(product);
-
-  fs.writeFileSync("products.json", JSON.stringify(products, null, 2));
-
-  res.json({ message: "Product added" });
-});
-
-// DELETE PRODUCT
-app.post("/delete-product", verifyToken, (req, res) => {
-  const { index } = req.body;
-
-  let products = JSON.parse(fs.readFileSync("products.json"));
-
-  products.splice(index, 1);
-
-  fs.writeFileSync("products.json", JSON.stringify(products, null, 2));
-
-  res.json({ message: "Deleted" });
-});
-
-// ================== IMAGE UPLOAD ==================
-app.post("/upload", upload.single("image"), (req, res) => {
-  res.json({ image: req.file.filename });
-});
-
-// ================== START SERVER ==================
+// ================= START =================
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
