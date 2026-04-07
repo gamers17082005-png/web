@@ -78,3 +78,42 @@ const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+// ================= PRODUCTS API =================
+
+// GET PRODUCTS
+app.get("/products", (req, res) => {
+  if (!fs.existsSync("products.json")) return res.json([]);
+
+  const products = JSON.parse(fs.readFileSync("products.json"));
+  res.json(products);
+});
+
+// ADD PRODUCT
+app.post("/add-product", (req, res) => {
+  const product = req.body;
+
+  let products = [];
+
+  if (fs.existsSync("products.json")) {
+    products = JSON.parse(fs.readFileSync("products.json"));
+  }
+
+  products.push(product);
+
+  fs.writeFileSync("products.json", JSON.stringify(products, null, 2));
+
+  res.json({ message: "Product added" });
+});
+
+// DELETE PRODUCT
+app.post("/delete-product", (req, res) => {
+  const { index } = req.body;
+
+  let products = JSON.parse(fs.readFileSync("products.json"));
+
+  products.splice(index, 1);
+
+  fs.writeFileSync("products.json", JSON.stringify(products, null, 2));
+
+  res.json({ message: "Deleted" });
+});
