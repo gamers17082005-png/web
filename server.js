@@ -1,180 +1,206 @@
 const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
-const Razorpay = require("razorpay");
 const multer = require("multer");
+const path = require("path");
+const Razorpay = require("razorpay");
 const jwt = require("jsonwebtoken");
 
 const app = express();
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
 
-// ================= CONFIG =================
-const SECRET = "mysecretkey";
+// ===== CONFIG =====
+const PORT = 5000;
+const JWT_SECRET = "mysecretkey";
 
-const razorpay = new Razorpay({
-  key_id: "YOUR_RAZORPAY_KEY",
-  key_secret: "YOUR_RAZORPAY_SECRET"
-});
+// ===== FILE PATHS =====
+const PRODUCTS_FILE = "products.json";
+const ORDERS_FILE = "orders.json";
 
-// ================= FILE SETUP =================
-if (!fs.existsSync("products.json")) fs.writeFileSync("products.json", "[]");
-if (!fs.existsSync("orders.json")) fs.writeFileSync("orders.json", "[]");
+// ===== INIT FILES =====
+if (!fs.existsSync(PRODUCTS_FILE)) fs.writeFileSync(PRODUCTS_FILE, "[]");
+if (!fs.existsSync(ORDERS_FILE)) fs.writeFileSync(ORDERS_FILE, "[]");
 
-// ================= IMAGE UPLOAD =================
-if (!fs.existsSync("uploads")) fs.mkdirSync("uploads");
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/"),
-  filename: (req, file, cb) =>
-    cb(null, Date.now() + "-" + file.originalname)
-});
-
-const upload = multer({ storage });
-
-// Serve images
+// ===== SERVE UPLOADS =====
 app.use("/uploads", express.static("uploads"));
 
-// ================= AUTH =================
-function verifyToken(req, res, next) {
-  const token = req.headers["authorization"];
-  if (!token) return res.status(403).send("No token");
+// ===== MULTER (IMAGE UPLOAD) =====
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    if (!fs.existsSync("uploads")) fs.mkdirSync("uploads");
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+const upload = multer({ storage });
 
-  jwt.verify(token, SECRET, (err) => {
-    if (err) return res.status(401).send("Invalid token");
-    next();
-  });
-}
-
-// ================= ADMIN LOGIN =================
-app.post("/admin-login", (req, res) => {
-  const { username, password } = req.body;
-
-  if (username === "admin" && password === "1234") {
-    const token = jwt.sign({ user: "admin" }, SECRET, { expiresIn: "1h" });
-    res.json({ token });
-  } else {
-    res.status(401).json({ message: "Invalid login" });
-  }
+// ===== RAZORPAY =====
+const razorpay = new Razorpay({
+  key_id: "YOUR_KEY_ID",
+  key_secret: "YOUR_KEY_SECRET",
 });
 
-// ================= PRODUCTS =================
+// ===== HELPERS =====
+function readJSON(file) {
+  return JSON.parse(fs.readFileSync(file));
+}
+function writeJSON(file, data) {
+  fs.writeFileSync(file, JSON.stringify(data, null, 2));
+}
 
-// Get all products
+// ===== ADMIN LOGIN =====
+app.post("/admin/login", (req, res) => {
+  const { username, password } = req.body;
+
+  if (username === "admin" && password === "admin123") {
+    const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: "1d" });
+    return res.json({ token });
+  }
+
+  res.status(401).json({ message: "Invalid credentials" });
+});
+
+// ===== AUTH MIDDLEWARE =====
+function verifyToken(req, res, next) {
+  const token = req.headers["authorization"];
+  if (!token) return res.status(403).json({ message: "No token" });
+
+  try {
+    jwt.verify(token, JWT_SECRET);
+    next();
+  } catch {
+    res.status(401).json({ message: "Invalid token" });
+  }
+}
+
+// ===== UPLOAD IMAGE =====
+app.post("/upload", verifyToken, upload.single("image"), (req, res) => {
+  res.json({ imageUrl: `/uploads/${req.file.filename}` });
+});
+
+// ===== PRODUCTS =====
+
+// GET PRODUCTS
 app.get("/products", (req, res) => {
-  const products = JSON.parse(fs.readFileSync("products.json"));
+  const products = readJSON(PRODUCTS_FILE);
   res.json(products);
 });
 
-// Add product (admin only)
-app.post("/add-product", verifyToken, (req, res) => {
-  const { name, price, image } = req.body;
+// ADD PRODUCT
+app.post("/products", verifyToken, (req, res) => {
+  const products = readJSON(PRODUCTS_FILE);
 
-  let products = JSON.parse(fs.readFileSync("products.json"));
+  const newProduct = {
+    id: Date.now(),
+    name: req.body.name,
+    price: req.body.price,
+    image: req.body.image,
+  };
 
-  products.push({ name, price, image });
+  products.push(newProduct);
+  writeJSON(PRODUCTS_FILE, products);
 
-  fs.writeFileSync("products.json", JSON.stringify(products, null, 2));
-
-  res.json({ message: "Product added" });
+  res.json({ message: "Product added", product: newProduct });
 });
 
-// Delete product (admin only)
-app.post("/delete-product", verifyToken, (req, res) => {
-  const { index } = req.body;
+// DELETE PRODUCT
+app.delete("/products/:id", verifyToken, (req, res) => {
+  let products = readJSON(PRODUCTS_FILE);
+  products = products.filter((p) => p.id != req.params.id);
 
-  let products = JSON.parse(fs.readFileSync("products.json"));
-
-  products.splice(index, 1);
-
-  fs.writeFileSync("products.json", JSON.stringify(products, null, 2));
-
+  writeJSON(PRODUCTS_FILE, products);
   res.json({ message: "Deleted" });
 });
 
-// ================= IMAGE UPLOAD =================
-app.post("/upload", upload.single("image"), (req, res) => {
-  res.json({ image: req.file.filename });
-});
-
-// ================= CREATE ORDER =================
+// ===== CREATE ORDER =====
 app.post("/create-order", async (req, res) => {
+  const { cart, address } = req.body;
+
+  let total = 0;
+  cart.forEach((item) => {
+    total += item.price * item.quantity;
+  });
+
+  // DELIVERY LOGIC
+  const state = address.state.toLowerCase();
+  let delivery = 199;
+
+  if (state.includes("andhra") || state.includes("telangana")) {
+    delivery = 99;
+  }
+
+  total += delivery;
+
   try {
-    const { amount, state } = req.body;
-
-    let delivery = 199;
-
-    if (
-      state.toLowerCase() === "andhra pradesh" ||
-      state.toLowerCase() === "telangana"
-    ) {
-      delivery = 99;
-    }
-
-    const total = amount + delivery;
-
     const order = await razorpay.orders.create({
       amount: total * 100,
-      currency: "INR"
+      currency: "INR",
     });
 
-    res.json({ order, delivery, total });
+    res.json({
+      orderId: order.id,
+      amount: total,
+      delivery,
+    });
   } catch (err) {
-    res.status(500).send(err);
+    res.status(500).json({ error: err.message });
   }
 });
 
-// ================= SAVE ORDER =================
-app.post("/save-order", (req, res) => {
-  const order = req.body;
+// ===== SAVE ORDER AFTER PAYMENT =====
+app.post("/verify-payment", (req, res) => {
+  const { cart, address, paymentId } = req.body;
 
-  let orders = JSON.parse(fs.readFileSync("orders.json"));
+  const orders = readJSON(ORDERS_FILE);
 
-  order.status = "Pending";
-  order.date = new Date();
+  const newOrder = {
+    id: "ORD" + Date.now(),
+    cart,
+    address,
+    paymentId,
+    status: "Placed",
+    date: new Date(),
+  };
 
-  orders.push(order);
+  orders.push(newOrder);
+  writeJSON(ORDERS_FILE, orders);
 
-  fs.writeFileSync("orders.json", JSON.stringify(orders, null, 2));
-
-  res.json({ message: "Order saved" });
+  res.json({ message: "Order saved", order: newOrder });
 });
 
-// ================= TRACK ORDER =================
-app.get("/track-order", (req, res) => {
-  const { phone } = req.query;
-
-  let orders = JSON.parse(fs.readFileSync("orders.json"));
-
-  const userOrders = orders.filter(o => o.phone === phone);
-
-  res.json(userOrders);
-});
-
-// ================= ADMIN ORDERS =================
-
-// Get all orders
+// ===== GET ALL ORDERS (ADMIN) =====
 app.get("/orders", verifyToken, (req, res) => {
-  const orders = JSON.parse(fs.readFileSync("orders.json"));
+  const orders = readJSON(ORDERS_FILE);
   res.json(orders);
 });
 
-// Update order status
-app.post("/update-status", verifyToken, (req, res) => {
-  const { index, status } = req.body;
+// ===== TRACK ORDER =====
+app.get("/track/:id", (req, res) => {
+  const orders = readJSON(ORDERS_FILE);
+  const order = orders.find((o) => o.id === req.params.id);
 
-  let orders = JSON.parse(fs.readFileSync("orders.json"));
+  if (!order) return res.status(404).json({ message: "Not found" });
 
-  orders[index].status = status;
+  res.json(order);
+});
 
-  fs.writeFileSync("orders.json", JSON.stringify(orders, null, 2));
+// ===== UPDATE ORDER STATUS =====
+app.put("/orders/:id", verifyToken, (req, res) => {
+  const orders = readJSON(ORDERS_FILE);
+
+  const order = orders.find((o) => o.id === req.params.id);
+  if (!order) return res.status(404).json({ message: "Not found" });
+
+  order.status = req.body.status;
+  writeJSON(ORDERS_FILE, orders);
 
   res.json({ message: "Updated" });
 });
 
-// ================= START SERVER =================
-const PORT = process.env.PORT || 5000;
-
+// ===== START SERVER =====
 app.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
