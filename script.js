@@ -94,7 +94,7 @@ async function checkout() {
   console.log("Checkout clicked");
   let total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
-  const response = await fetch("http://localhost:5000/create-order", {
+  const response = await fetch("https://web-8jea.onrender.com/create-order", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
