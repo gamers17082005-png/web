@@ -1,150 +1,68 @@
-let cart = [];
+const express = require("express");
+const Razorpay = require("razorpay");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const fs = require("fs");
 
-// ADD TO CART
-function addToCart(name, price) {
-  let item = cart.find(p => p.name === name);
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
 
-  if (item) {
-    item.qty++;
-  } else {
-    cart.push({ name, price, qty: 1 });
-  }
+// Razorpay config
+const razorpay = new Razorpay({
+  key_id: "rzp_test_xxxxxxxx",
+  key_secret: "your_secret_key"
+});
 
-  updateCartUI();
-}
-
-// UPDATE CART
-function updateCartUI() {
-  let cartItems = document.getElementById("cart-items");
-  let total = document.getElementById("cart-total");
-
-  cartItems.innerHTML = "";
-
-  let totalPrice = 0;
-
-  cart.forEach(item => {
-    totalPrice += item.price * item.qty;
-
-    cartItems.innerHTML += `
-      <p>${item.name} - ₹${item.price} x ${item.qty}</p>
-    `;
-  });
-
-  total.innerText = "Subtotal: ₹" + totalPrice;
-}
-// TOGGLE CART
-function toggleCart() {
-  let cartBox = document.getElementById("cart-box");
-
-  if (cartBox.style.display === "none") {
-    cartBox.style.display = "block";
-  } else {
-    cartBox.style.display = "none";
-  }
-}
-
-// CHECKOUT
-async function checkout() {
-  if (cart.length === 0) {
-    alert("Cart is empty!");
-    return;
-  }
-
-  const name = document.getElementById("name").value;
-  const phone = document.getElementById("phone").value;
-  const address = document.getElementById("address").value;
-  const state = document.getElementById("state").value;
-
-  if (!name || !phone || !address || !state) {
-    alert("Fill all address fields!");
-    return;
-  }
-
-  let totalAmount = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-
-  let delivery = (state === "Andhra Pradesh" || state === "Telangana") ? 99 : 199;
-
-  let finalAmount = totalAmount + delivery;
-
-  // CREATE ORDER (BACKEND)
-  const res = await fetch("http://localhost:5000/create-order", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ amount: finalAmount })
-  });
-
-  const order = await res.json();
+// CREATE ORDER
+app.post("/create-order", async (req, res) => {
+  const { amount } = req.body;
 
   const options = {
-    key: "rzp_test_xxxxxxxx", // replace
-    amount: order.amount,
-    currency: "INR",
-    order_id: order.id,
-
-    handler: async function (response) {
-      alert("Payment Successful!");
-
-      await fetch("http://localhost:5000/save-order", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-          payment_id: response.razorpay_payment_id,
-          cart,
-          total: finalAmount,
-          name,
-          phone,
-          address,
-          state,
-          status: "Placed"
-        })
-      });
-
-      cart = [];
-      updateCartUI();
-    }
+    amount: amount * 100,
+    currency: "INR"
   };
 
-  const rzp = new Razorpay(options);
-  rzp.open();
-}
-  // GET USER INPUT
-  const name = document.getElementById("name").value;
-  const phone = document.getElementById("phone").value;
-  const address = document.getElementById("address").value;
-  const state = document.getElementById("state").value;
+  const order = await razorpay.orders.create(options);
+  res.json(order);
+});
 
-  // VALIDATION
-  if (!name || !phone || !address || !state) {
-    alert("Please fill all address details!");
-    return;
+// SAVE ORDER
+app.post("/save-order", (req, res) => {
+  const order = req.body;
+
+  let orders = [];
+
+  if (fs.existsSync("orders.json")) {
+    orders = JSON.parse(fs.readFileSync("orders.json"));
   }
 
-  // CALCULATE CART TOTAL
-  let totalAmount = cart.reduce((sum, item) => {
-    return sum + item.price * item.qty;
-  }, 0);
+  orders.push(order);
 
-  // DELIVERY CHARGE LOGIC
-  let deliveryCharge = 199;
+  fs.writeFileSync("orders.json", JSON.stringify(orders, null, 2));
 
-  if (state === "Andhra Pradesh" || state === "Telangana") {
-    deliveryCharge = 99;
-  }
+  res.json({ message: "Order saved" });
+});
 
-  const finalAmount = totalAmount + deliveryCharge;
+// GET ORDERS (ADMIN)
+app.get("/orders", (req, res) => {
+  if (!fs.existsSync("orders.json")) return res.json([]);
 
-  console.log("Base:", totalAmount);
-  console.log("Delivery:", deliveryCharge);
-  console.log("Final:", finalAmount);
+  const orders = JSON.parse(fs.readFileSync("orders.json"));
+  res.json(orders);
+});
 
-  alert(
-    `Order Summary:\n
-    Product Total: ₹${totalAmount}
-    Delivery: ₹${deliveryCharge}
-    Final Amount: ₹${finalAmount}`
-  );
+// UPDATE STATUS
+app.post("/update-status", (req, res) => {
+  const { index, status } = req.body;
 
-  // 👉 NEXT STEP (Razorpay)
-  // send finalAmount to backend instead of totalAmount
+  let orders = JSON.parse(fs.readFileSync("orders.json"));
 
-}
+  orders[index].status = status;
+
+  fs.writeFileSync("orders.json", JSON.stringify(orders, null, 2));
+
+  res.json({ message: "Updated" });
+});
+
+app.listen(5000, () => console.log("Server running"));
