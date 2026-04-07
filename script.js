@@ -91,34 +91,44 @@ function removeItem(index) {
 
 // CHECKOUT
 async function checkout() {
-  console.log("Checkout clicked");
-  let total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  const response = await fetch("https://web-8jea.onrender.com/create-order", {
+  console.log("Checkout clicked, amount:", totalAmount);
+
+  // Call backend
+  const response = await fetch("http://localhost:5000/create-order", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ amount: total })
+    body: JSON.stringify({ amount: totalAmount })
   });
 
   const order = await response.json();
 
-  let options = {
-    key: "YOUR_KEY_ID",
+  console.log("Order created:", order);
+
+  // Open Razorpay
+  const options = {
+    key: "YOUR_KEY_ID", // same as server
     amount: order.amount,
     currency: "INR",
-    order_id: order.id,
     name: "HSV Sugandhika",
-    description: "Pooja Items",
-    handler: function () {
-      alert("Payment Successful 🎉");
+    description: "Pooja Items Purchase",
+    order_id: order.id,
+    handler: function (response) {
+      alert("Payment Successful!");
+      console.log(response);
+    },
+    theme: {
+      color: "#FF7A00"
     }
   };
 
-  let rzp = new Razorpay(options);
+  const rzp = new Razorpay(options);
   rzp.open();
-}// SCROLL
+}
+// SCROLL
 function scrollToProducts() {
   document.getElementById("products").scrollIntoView({
     behavior: "smooth"
