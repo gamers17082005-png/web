@@ -110,18 +110,14 @@ async function checkout() {
     order_id: order.id,
     name: "HSV Sugandhika",
     description: "Pooja Items",
-    handler: function (response) {
+    handler: function () {
       alert("Payment Successful 🎉");
-      cart = [];
-      updateCartCount();
-      renderCart();
     }
   };
 
   let rzp = new Razorpay(options);
   rzp.open();
-}
-// SCROLL
+}// SCROLL
 function scrollToProducts() {
   document.getElementById("products").scrollIntoView({
     behavior: "smooth"
