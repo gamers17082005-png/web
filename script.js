@@ -63,3 +63,12 @@ function decreaseQty(index) {
   }
   updateCartUI();
 }
+function toggleCart() {
+  const cart = document.getElementById("cart-box");
+
+  if (cart.style.display === "none") {
+    cart.style.display = "block";
+  } else {
+    cart.style.display = "none";
+  }
+}
