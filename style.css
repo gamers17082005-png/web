@@ -114,7 +114,11 @@ footer {
   transition: right 0.3s ease;
   z-index: 1000;
 }
-
+.cart-panel button {
+  margin: 3px;
+  padding: 5px;
+  cursor: pointer;
+}
 function toggleCart() {
   let panel = document.getElementById("cart-panel");
 
