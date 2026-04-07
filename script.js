@@ -66,3 +66,34 @@ app.post("/update-status", (req, res) => {
 });
 
 app.listen(5000, () => console.log("Server running"));
+async function trackOrder() {
+  const phone = document.getElementById("trackPhone").value;
+
+  if (!phone) {
+    alert("Enter phone number");
+    return;
+  }
+
+  const res = await fetch("http://localhost:5000/orders");
+  const data = await res.json();
+
+  const userOrders = data.filter(o => o.phone === phone);
+
+  let html = "";
+
+  if (userOrders.length === 0) {
+    html = "<p>No orders found</p>";
+  } else {
+    userOrders.forEach(o => {
+      html += `
+        <div style="border:1px solid #ccc; padding:10px; margin:10px;">
+          <p><b>Amount:</b> ₹${o.total}</p>
+          <p><b>Status:</b> ${o.status}</p>
+          <p><b>Address:</b> ${o.address}</p>
+        </div>
+      `;
+    });
+  }
+
+  document.getElementById("result").innerHTML = html;
+}
