@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HSV Sugandhika</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<header class="navbar">
+  <img src="images/logo.png" class="logo">
+  <nav>
+    <a href="#">Home</a>
+    <a href="#products">Products</a>
+    <a href="#about">About</a>
+    <a href="#contact">Support</a>
+  </nav>
+  <div class="cart" onclick="toggleCart()">🛒 <span id="cart-count">0</span></div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <h1>HSV Sugandhika</h1>
+    <p>From Nature’s Heart to Your Sacred Rituals</p>
+    <button onclick="scrollToProducts()">Shop Now</button>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section id="products" class="products">
+  <h2>Featured Products</h2>
+  <div class="product-grid">
+
+    <div class="card">
+      <img src="images/product1.jpg">
+      <h3>Agarbatti</h3>
+      <p>₹120</p>
+      <button onclick="addToCart('Agarbatti',120)">Add to Cart</button>
+    </div>
+
+    <div class="card">
+      <img src="images/product2.jpg">
+      <h3>Dhoop</h3>
+      <p>₹150</p>
+      <button onclick="addToCart('Dhoop',150)">Add to Cart</button>
+    </div>
+
+    <div class="card">
+      <img src="images/product3.jpg">
+      <h3>Camphor</h3>
+      <p>₹100</p>
+      <button onclick="addToCart('Camphor',100)">Add to Cart</button>
+    </div>
+
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="about">
+  <h2>About Us</h2>
+  <p>
+    HSV Sugandhika brings you pure, natural, and handcrafted pooja products
+    made with devotion. Our mission is to connect nature with spirituality.
+  </p>
+</section>
+
+<!-- BENEFITS -->
+<section class="benefits">
+  <div>🌿 100% Natural</div>
+  <div>🪔 Handcrafted</div>
+  <div>♻️ Eco-Friendly</div>
+  <div>✨ Divine Fragrance</div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <h2>What Customers Say</h2>
+  <p>"Amazing fragrance and purity!"</p>
+</section>
+
+<!-- SUPPORT -->
+<section id="contact" class="support">
+  <h2>Contact Us</h2>
+  <form>
+    <input type="text" placeholder="Name">
+    <input type="email" placeholder="Email">
+    <textarea placeholder="Message"></textarea>
+    <button type="submit">Send</button>
+  </form>
+
+  <a class="whatsapp" href="https://wa.me/91XXXXXXXXXX">WhatsApp Us</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <img src="images/logo.png">
+  <p>© 2026 HSV Sugandhika</p>
+</footer>
+
+<!-- CART PANEL -->
+<div id="cart-panel" class="cart-panel"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
