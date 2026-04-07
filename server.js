@@ -1,102 +1,135 @@
-// IMPORTS
 const express = require("express");
 const cors = require("cors");
+const fs = require("fs");
 const Razorpay = require("razorpay");
+const jwt = require("jsonwebtoken");
+const multer = require("multer");
 
-// APP SETUP
 const app = express();
-app.use(cors());
 app.use(express.json());
+app.use(cors());
 
-// 🔑 RAZORPAY SETUP (replace with your real keys)
+// ================== CONFIG ==================
+const SECRET = "mysecretkey";
+
+// Razorpay
 const razorpay = new Razorpay({
-  key_id: "rzp_test_xxxxxxxx",       // 🔴 replace this
-  key_secret: "xxxxxxxxxxxx"         // 🔴 replace this
+  key_id: "YOUR_RAZORPAY_KEY_ID",
+  key_secret: "YOUR_RAZORPAY_KEY_SECRET"
 });
 
-// 🧾 TEMP STORAGE (for orders)
-let orders = [];
+// ================== FILE SETUP ==================
+if (!fs.existsSync("orders.json")) fs.writeFileSync("orders.json", "[]");
+if (!fs.existsSync("products.json")) fs.writeFileSync("products.json", "[]");
 
-// ==============================
-// 💳 CREATE ORDER API
-// ==============================
-app.post("/create-order", async (req, res) => {
-  try {
-    const { amount } = req.body;
+// ================== IMAGE UPLOAD ==================
+if (!fs.existsSync("uploads")) fs.mkdirSync("uploads");
 
-    console.log("Creating order for amount:", amount);
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, "uploads/"),
+  filename: (req, file, cb) =>
+    cb(null, Date.now() + "-" + file.originalname)
+});
 
-    const options = {
-      amount: amount * 100, // ₹ → paise
-      currency: "INR",
-      receipt: "order_" + Date.now()
-    };
+const upload = multer({ storage });
 
-    const order = await razorpay.orders.create(options);
+app.use("/uploads", express.static("uploads"));
 
-    console.log("Order created:", order.id);
+// ================== AUTH ==================
+function verifyToken(req, res, next) {
+  const token = req.headers["authorization"];
+  if (!token) return res.status(403).send("No token");
 
-    res.json(order);
-  } catch (error) {
-    console.error("Error creating order:", error);
-    res.status(500).send("Error creating order");
+  jwt.verify(token, SECRET, (err) => {
+    if (err) return res.status(401).send("Invalid token");
+    next();
+  });
+}
+
+// ================== ADMIN LOGIN ==================
+app.post("/admin-login", (req, res) => {
+  const { username, password } = req.body;
+
+  if (username === "admin" && password === "1234") {
+    const token = jwt.sign({ user: "admin" }, SECRET, { expiresIn: "1h" });
+    res.json({ token });
+  } else {
+    res.status(401).json({ message: "Invalid login" });
   }
 });
 
-// ==============================
-// 📦 SAVE ORDER AFTER PAYMENT
-// ==============================
-app.post("/save-order", (req, res) => {
-  const orderData = req.body;
+// ================== CREATE ORDER (RAZORPAY) ==================
+app.post("/create-order", async (req, res) => {
+  try {
+    const { amount, state } = req.body;
 
-  console.log("Saving order:", orderData);
+    let delivery = 199;
+    if (
+      state.toLowerCase() === "andhra pradesh" ||
+      state.toLowerCase() === "telangana"
+    ) {
+      delivery = 99;
+    }
 
-  orders.push(orderData);
+    const total = amount + delivery;
 
-  res.json({ message: "Order saved successfully" });
+    const order = await razorpay.orders.create({
+      amount: total * 100,
+      currency: "INR"
+    });
+
+    res.json({ order, delivery, total });
+  } catch (err) {
+    res.status(500).send(err);
+  }
 });
 
-// ==============================
-// 📊 GET ALL ORDERS (ADMIN)
-// ==============================
-app.get("/orders", (req, res) => {
+// ================== SAVE ORDER ==================
+app.post("/save-order", (req, res) => {
+  const order = req.body;
+
+  let orders = JSON.parse(fs.readFileSync("orders.json"));
+
+  order.status = "Pending";
+  orders.push(order);
+
+  fs.writeFileSync("orders.json", JSON.stringify(orders, null, 2));
+
+  res.json({ message: "Order saved" });
+});
+
+// ================== GET ORDERS ==================
+app.get("/orders", verifyToken, (req, res) => {
+  const orders = JSON.parse(fs.readFileSync("orders.json"));
   res.json(orders);
 });
 
-// ==============================
-// 🌐 ROOT CHECK
-// ==============================
-app.get("/", (req, res) => {
-  res.send("Server is running 🚀");
+// ================== UPDATE ORDER STATUS ==================
+app.post("/update-status", verifyToken, (req, res) => {
+  const { index, status } = req.body;
+
+  let orders = JSON.parse(fs.readFileSync("orders.json"));
+
+  orders[index].status = status;
+
+  fs.writeFileSync("orders.json", JSON.stringify(orders, null, 2));
+
+  res.json({ message: "Updated" });
 });
 
-// ==============================
-// 🚀 START SERVER
-// ==============================
-const PORT = 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
-// ================= PRODUCTS API =================
+// ================== PRODUCTS ==================
 
 // GET PRODUCTS
 app.get("/products", (req, res) => {
-  if (!fs.existsSync("products.json")) return res.json([]);
-
   const products = JSON.parse(fs.readFileSync("products.json"));
   res.json(products);
 });
 
 // ADD PRODUCT
-app.post("/add-product", (req, res) => {
+app.post("/add-product", verifyToken, (req, res) => {
   const product = req.body;
 
-  let products = [];
-
-  if (fs.existsSync("products.json")) {
-    products = JSON.parse(fs.readFileSync("products.json"));
-  }
+  let products = JSON.parse(fs.readFileSync("products.json"));
 
   products.push(product);
 
@@ -106,7 +139,7 @@ app.post("/add-product", (req, res) => {
 });
 
 // DELETE PRODUCT
-app.post("/delete-product", (req, res) => {
+app.post("/delete-product", verifyToken, (req, res) => {
   const { index } = req.body;
 
   let products = JSON.parse(fs.readFileSync("products.json"));
@@ -116,4 +149,16 @@ app.post("/delete-product", (req, res) => {
   fs.writeFileSync("products.json", JSON.stringify(products, null, 2));
 
   res.json({ message: "Deleted" });
+});
+
+// ================== IMAGE UPLOAD ==================
+app.post("/upload", upload.single("image"), (req, res) => {
+  res.json({ image: req.file.filename });
+});
+
+// ================== START SERVER ==================
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log("Server running on port " + PORT);
 });
