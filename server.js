@@ -17,11 +17,11 @@ const razorpay = new Razorpay({
   key_secret: "YOUR_RAZORPAY_SECRET"
 });
 
-// ================= FILES =================
+// ================= FILE SETUP =================
 if (!fs.existsSync("products.json")) fs.writeFileSync("products.json", "[]");
 if (!fs.existsSync("orders.json")) fs.writeFileSync("orders.json", "[]");
 
-// ================= UPLOAD =================
+// ================= IMAGE UPLOAD =================
 if (!fs.existsSync("uploads")) fs.mkdirSync("uploads");
 
 const storage = multer.diskStorage({
@@ -32,6 +32,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+// Serve images
 app.use("/uploads", express.static("uploads"));
 
 // ================= AUTH =================
@@ -58,15 +59,19 @@ app.post("/admin-login", (req, res) => {
 });
 
 // ================= PRODUCTS =================
+
+// Get all products
 app.get("/products", (req, res) => {
   const products = JSON.parse(fs.readFileSync("products.json"));
   res.json(products);
 });
 
+// Add product (admin only)
 app.post("/add-product", verifyToken, (req, res) => {
   const { name, price, image } = req.body;
 
   let products = JSON.parse(fs.readFileSync("products.json"));
+
   products.push({ name, price, image });
 
   fs.writeFileSync("products.json", JSON.stringify(products, null, 2));
@@ -74,10 +79,12 @@ app.post("/add-product", verifyToken, (req, res) => {
   res.json({ message: "Product added" });
 });
 
+// Delete product (admin only)
 app.post("/delete-product", verifyToken, (req, res) => {
   const { index } = req.body;
 
   let products = JSON.parse(fs.readFileSync("products.json"));
+
   products.splice(index, 1);
 
   fs.writeFileSync("products.json", JSON.stringify(products, null, 2));
@@ -96,6 +103,7 @@ app.post("/create-order", async (req, res) => {
     const { amount, state } = req.body;
 
     let delivery = 199;
+
     if (
       state.toLowerCase() === "andhra pradesh" ||
       state.toLowerCase() === "telangana"
@@ -123,6 +131,8 @@ app.post("/save-order", (req, res) => {
   let orders = JSON.parse(fs.readFileSync("orders.json"));
 
   order.status = "Pending";
+  order.date = new Date();
+
   orders.push(order);
 
   fs.writeFileSync("orders.json", JSON.stringify(orders, null, 2));
@@ -130,16 +140,31 @@ app.post("/save-order", (req, res) => {
   res.json({ message: "Order saved" });
 });
 
-// ================= ADMIN =================
+// ================= TRACK ORDER =================
+app.get("/track-order", (req, res) => {
+  const { phone } = req.query;
+
+  let orders = JSON.parse(fs.readFileSync("orders.json"));
+
+  const userOrders = orders.filter(o => o.phone === phone);
+
+  res.json(userOrders);
+});
+
+// ================= ADMIN ORDERS =================
+
+// Get all orders
 app.get("/orders", verifyToken, (req, res) => {
   const orders = JSON.parse(fs.readFileSync("orders.json"));
   res.json(orders);
 });
 
+// Update order status
 app.post("/update-status", verifyToken, (req, res) => {
   const { index, status } = req.body;
 
   let orders = JSON.parse(fs.readFileSync("orders.json"));
+
   orders[index].status = status;
 
   fs.writeFileSync("orders.json", JSON.stringify(orders, null, 2));
@@ -147,7 +172,7 @@ app.post("/update-status", verifyToken, (req, res) => {
   res.json({ message: "Updated" });
 });
 
-// ================= START =================
+// ================= START SERVER =================
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
