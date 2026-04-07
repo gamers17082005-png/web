@@ -30,9 +30,8 @@ function updateCartUI() {
     `;
   });
 
-  total.innerText = "Total: ₹" + totalPrice;
+  total.innerText = "Subtotal: ₹" + totalPrice;
 }
-
 // TOGGLE CART
 function toggleCart() {
   let cartBox = document.getElementById("cart-box");
@@ -51,5 +50,44 @@ function checkout() {
     return;
   }
 
-  alert("Proceeding to payment...");
+  // GET USER INPUT
+  const name = document.getElementById("name").value;
+  const phone = document.getElementById("phone").value;
+  const address = document.getElementById("address").value;
+  const state = document.getElementById("state").value;
+
+  // VALIDATION
+  if (!name || !phone || !address || !state) {
+    alert("Please fill all address details!");
+    return;
+  }
+
+  // CALCULATE CART TOTAL
+  let totalAmount = cart.reduce((sum, item) => {
+    return sum + item.price * item.qty;
+  }, 0);
+
+  // DELIVERY CHARGE LOGIC
+  let deliveryCharge = 199;
+
+  if (state === "Andhra Pradesh" || state === "Telangana") {
+    deliveryCharge = 99;
+  }
+
+  const finalAmount = totalAmount + deliveryCharge;
+
+  console.log("Base:", totalAmount);
+  console.log("Delivery:", deliveryCharge);
+  console.log("Final:", finalAmount);
+
+  alert(
+    `Order Summary:\n
+    Product Total: ₹${totalAmount}
+    Delivery: ₹${deliveryCharge}
+    Final Amount: ₹${finalAmount}`
+  );
+
+  // 👉 NEXT STEP (Razorpay)
+  // send finalAmount to backend instead of totalAmount
+
 }
