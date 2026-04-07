@@ -91,10 +91,27 @@ function removeItem(index) {
 
 // CHECKOUT
 function checkout() {
-  alert("Order placed successfully 🙏");
-  cart = [];
-  updateCartCount();
-  renderCart();
+  let total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+
+  let options = {
+    key: "YOUR_KEY_ID", // replace this
+    amount: total * 100, // in paise
+    currency: "INR",
+    name: "HSV Sugandhika",
+    description: "Pooja Items Purchase",
+    handler: function (response) {
+      alert("Payment Successful! 🎉");
+      cart = [];
+      updateCartCount();
+      renderCart();
+    },
+    theme: {
+      color: "#FF7A00"
+    }
+  };
+
+  let rzp = new Razorpay(options);
+  rzp.open();
 }
 
 // SCROLL
