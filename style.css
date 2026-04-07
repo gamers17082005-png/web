@@ -106,10 +106,25 @@ footer {
 /* CART */
 .cart-panel {
   position: fixed;
-  right: -300px;
   top: 0;
+  right: -300px; /* hidden by default */
   width: 300px;
-  background: white;
   height: 100%;
-  transition: 0.3s;
+  background: white;
+  box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+  padding: 20px;
+  transition: right 0.3s ease;
+  z-index: 1000;
+}
+
+function toggleCart() {
+  let panel = document.getElementById("cart-panel");
+
+  if (panel.style.right === "0px") {
+    panel.style.right = "-300px";
+  } else {
+    panel.style.right = "0px";
+  }
+
+  renderCart();
 }
