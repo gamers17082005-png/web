@@ -1,0 +1,115 @@
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: #fff;
+}
+
+/* NAVBAR */
+.navbar {
+  position: sticky;
+  top: 0;
+  background: #800000;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+}
+
+.logo {
+  height: 50px;
+}
+
+/* HERO */
+.hero {
+  height: 90vh;
+  background: url('images/hero.jpg') center/cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.hero h1 {
+  font-size: 50px;
+}
+
+.hero button {
+  background: #FF7A00;
+  padding: 10px 20px;
+  border: none;
+  color: white;
+}
+
+/* PRODUCTS */
+.products {
+  padding: 50px;
+  text-align: center;
+}
+
+.product-grid {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.card {
+  border: 1px solid #ddd;
+  padding: 20px;
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+/* ABOUT */
+.about {
+  padding: 50px;
+  background: #f9f9f9;
+}
+
+/* BENEFITS */
+.benefits {
+  display: flex;
+  justify-content: space-around;
+  padding: 20px;
+}
+
+/* SUPPORT */
+.support {
+  background: url('images/support-bg.jpg') center/cover;
+  padding: 50px;
+}
+
+.support form {
+  display: flex;
+  flex-direction: column;
+  max-width: 400px;
+}
+
+.whatsapp {
+  display: inline-block;
+  margin-top: 10px;
+  background: green;
+  color: white;
+  padding: 10px;
+}
+
+/* FOOTER */
+footer {
+  background: #800000;
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+
+/* CART */
+.cart-panel {
+  position: fixed;
+  right: -300px;
+  top: 0;
+  width: 300px;
+  background: white;
+  height: 100%;
+  transition: 0.3s;
+}
