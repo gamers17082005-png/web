@@ -146,3 +146,14 @@ body {
   border-top: 1px solid #555;
   padding-top: 10px;
 }
+.social-icons a {
+  margin-right: 12px;
+  font-size: 22px;
+  color: white;
+  transition: 0.3s;
+}
+
+.social-icons a:hover {
+  color: #ff7a00;
+  transform: scale(1.2);
+}
