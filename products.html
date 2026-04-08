@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Products - HSV Sugandhika</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+
+<body>
+
+<header class="navbar">
+  <div class="logo">🛕 HSV Sugandhika</div>
+
+  <nav class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="products.html">Products</a>
+    <a href="about.html">About</a>
+    <a href="benefits.html">Benefits</a>
+    <a href="testimonials.html">Testimonials</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+
+  <div class="nav-actions">
+    <button onclick="openCart()">🛒 (<span id="cartCount">0</span>)</button>
+  </div>
+</header>
+
+<section>
+  <h1 class="section-title">Our Products</h1>
+
+  <input type="text" id="searchInput" placeholder="Search products..." class="search"/>
+
+  <div id="productList"></div>
+</section>
+
+<!-- CART -->
+<div id="cartSection" class="cart">
+  <h2>Your Cart</h2>
+  <div id="cartItems"></div>
+  <p>Total: ₹<span id="cartTotal">0</span></p>
+
+  <button onclick="checkout()">Checkout</button>
+  <button onclick="closeCart()">Close</button>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
