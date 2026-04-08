@@ -1,15 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <h1>About Us</h1>
-<p>We provide natural pooja products from nature.</p>
   <meta charset="UTF-8">
-  <title>Page</title>
+  <title>About</title>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- CSS -->
-  <link rel="stylesheet" href="style.css">
+  <!-- ✅ FIXED PATH -->
+  <link rel="stylesheet" href="../style.css">
 
   <!-- ICONS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -17,40 +13,33 @@
 
 <body>
 
-<!-- 🔥 HEADER -->
+<!-- ✅ HEADER -->
 <header class="navbar">
   <div class="logo">🛕 HSV Sugandhika</div>
 
-  <nav class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="products.html">Products</a>
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="../products.html">Products</a>
     <a href="about.html">About</a>
     <a href="benefits.html">Benefits</a>
     <a href="testimonials.html">Testimonials</a>
     <a href="contact.html">Contact</a>
   </nav>
 
-  <button class="cart-btn" onclick="toggleCart()">
-    🛒 (<span id="cartCount">0</span>)
-  </button>
+  <button onclick="toggleCart()">🛒 (<span id="cartCount">0</span>)</button>
 </header>
 
-<!-- 🔥 PAGE CONTENT -->
-<section style="padding: 40px; text-align: center;">
-  <h1>REPLACE THIS TITLE</h1>
-  <p>Replace this content based on page</p>
+<!-- CONTENT -->
+<section style="padding:40px;">
+  <h1>About Us</h1>
+  <p>We provide natural pooja products.</p>
 </section>
 
-<!-- 🔥 CART -->
+<!-- CART -->
 <div id="cart" class="cart hidden"></div>
 
-<!-- 🔥 FOOTER -->
-<footer style="background:#111;color:white;text-align:center;padding:20px;">
-  <p>© 2026 HSV Sugandhika | All Rights Reserved</p>
-</footer>
-
-<!-- SCRIPT -->
-<script src="script.js"></script>
+<!-- ✅ FIXED PATH -->
+<script src="../script.js"></script>
 
 </body>
 </html>
