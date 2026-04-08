@@ -26,3 +26,24 @@ body { font-family: Arial; margin:0; }
 }
 
 .hidden { display:none; }
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ff7a00;
+  color: white;
+  padding: 15px;
+}
+
+.nav-links a {
+  color: white;
+  margin: 0 10px;
+  text-decoration: none;
+}
+
+.cart-btn {
+  background: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
