@@ -4,43 +4,43 @@ body {
 }
 
 /* HEADER */
-.navbar {
+/* Header */
+.header {
+  background: #111;
+  color: white;
+  padding: 15px 0;
+}
+
+.header .container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #ff7a00;
-  padding: 15px 30px;
-  color: white;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
 }
 
-.logo {
-  font-size: 20px;
+.header nav a {
+  color: white;
+  margin: 0 10px;
+  text-decoration: none;
   font-weight: bold;
 }
 
-.nav-links a {
-  margin: 0 12px;
+.header nav a:hover {
+  color: orange;
+}
+
+/* Footer */
+.footer {
+  background: #111;
   color: white;
-  text-decoration: none;
-  font-weight: 500;
+  text-align: center;
+  padding: 20px;
+  margin-top: 40px;
 }
 
-.nav-links a:hover {
-  text-decoration: underline;
+/* Page content spacing */
+main {
+  padding: 40px 20px;
 }
-
-.cart-btn {
-  background: white;
-  color: #ff7a00;
-  border: none;
-  padding: 8px 12px;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
 /* CONTENT */
 section {
   padding: 40px;
