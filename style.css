@@ -1,49 +1,148 @@
-body { font-family: Arial; margin:0; }
-
-.navbar {
-  display:flex;
-  justify-content:space-between;
-  padding:15px;
-  background:#ff7a00;
-  color:white;
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.navbar a { color:white; margin:10px; text-decoration:none; }
-
-.card {
-  border:1px solid #ddd;
-  padding:10px;
-  margin:10px;
+body {
+  font-family: Arial, sans-serif;
+  background: #f5f5f5;
 }
 
-.cart {
-  position:fixed;
-  right:0;
-  top:0;
-  width:300px;
-  height:100%;
-  background:white;
-}
-
-.hidden { display:none; }
+/* ================= HEADER ================= */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: #ff7a00;
   color: white;
-  padding: 15px;
+  padding: 15px 30px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.logo {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.nav-links {
+  display: flex;
 }
 
 .nav-links a {
   color: white;
-  margin: 0 10px;
+  margin: 0 12px;
   text-decoration: none;
+  font-weight: 500;
+  transition: 0.3s;
 }
 
+.nav-links a:hover {
+  color: #ffe0c2;
+}
+
+/* CART BUTTON */
 .cart-btn {
   background: white;
+  color: #ff7a00;
   border: none;
-  padding: 5px 10px;
+  padding: 6px 12px;
+  border-radius: 5px;
   cursor: pointer;
+  font-weight: bold;
+}
+
+/* ================= HERO / SECTION ================= */
+section {
+  padding: 50px 20px;
+  text-align: center;
+}
+
+h1 {
+  margin-bottom: 10px;
+}
+
+/* ================= PRODUCTS ================= */
+#productList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.card {
+  background: white;
+  border-radius: 10px;
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.card img {
+  width: 100%;
+  border-radius: 10px;
+}
+
+.card h3 {
+  margin: 10px 0;
+}
+
+.card button {
+  background: #ff7a00;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+/* ================= CART ================= */
+.cart {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 300px;
+  height: 100%;
+  background: white;
+  padding: 20px;
+  box-shadow: -5px 0 10px rgba(0,0,0,0.2);
+  overflow-y: auto;
+}
+
+.hidden {
+  display: none;
+}
+
+/* ================= FOOTER ================= */
+footer {
+  background: #111;
+  color: white;
+  text-align: center;
+  padding: 20px;
+  margin-top: 40px;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+  .nav-links {
+    flex-direction: column;
+    background: #ff7a00;
+    position: absolute;
+    top: 60px;
+    right: 0;
+    width: 200px;
+    display: none;
+  }
+
+  .nav-links a {
+    margin: 10px;
+  }
 }
