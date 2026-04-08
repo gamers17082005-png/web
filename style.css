@@ -5,6 +5,23 @@ body {
 }
 
 /* NAVBAR */
+<header class="navbar">
+  <div class="logo">🛕 HSV Sugandhika</div>
+
+  <nav class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="products.html">Products</a>
+    <a href="about.html">About</a>
+    <a href="benefits.html">Benefits</a>
+    <a href="testimonials.html">Testimonials</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+
+  <div class="nav-actions">
+    <button onclick="openCart()">🛒 (<span id="cartCount">0</span>)</button>
+  </div>
+</header>
+
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -12,14 +29,17 @@ body {
   background: linear-gradient(90deg, #ff7a00, #d4af37);
   padding: 12px 20px;
   color: white;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
 }
 
-.logo {
-  font-size: 20px;
-  font-weight: bold;
+.nav-links a {
+  margin: 0 10px;
+  text-decoration: none;
+  color: white;
+  font-weight: 500;
+}
+
+.nav-links a:hover {
+  text-decoration: underline;
 }
 
 .search-box input {
