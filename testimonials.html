@@ -8,42 +8,41 @@
   <link rel="stylesheet" href="../style.css">
 
   <!-- PAGE-SPECIFIC FIX (ONLY FOR THIS PAGE) -->
-  <style>
-    body {
-      background-color: #FFFFF !important;
-    }
+  <style><style>
+/* HEADER LAYOUT FIX */
+header {
+  background-color: #000 !important;
+  color: #fff;
+  padding: 15px 40px;
+  
+  display: flex;
+  justify-content: space-between; /* pushes menu right */
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
 
-    header {
-      background-color: #000 !important;
-      color: #fff !important;
-    }
+/* LOGO */
+header .logo {
+  font-size: 22px;
+  font-weight: bold;
+}
 
-    footer {
-      background-color: #000 !important;
-      color: #fff !important;
-    }
+/* NAV MENU RIGHT */
+nav {
+  display: flex;
+  gap: 20px;
+}
 
-    .reviews {
-      display: flex;
-      gap: 20px;
-      justify-content: center;
-      flex-wrap: wrap;
-      padding: 40px;
-    }
+/* NAV LINKS */
+nav a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 16px;
+}
 
-    .review-box {
-      background: #fff !important;
-      color: #000 !important;
-      padding: 20px;
-      border-radius: 10px;
-      width: 320px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
-    h2 {
-      text-align: center;
-      margin-top: 30px;
-    }
+nav a:hover {
+  color: #ff7a00;
+}
   </style>
 </head>
 
