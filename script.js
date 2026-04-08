@@ -1,5 +1,5 @@
 // ===== BACKEND URL =====
-const BASE = "https://your-backend.onrender.com"; // 🔁 REPLACE THIS
+const BASE = "https://hsv-sugandhika.onrender.com"; // 🔁 REPLACE THIS
 
 // ===== GLOBAL CART =====
 let cart = [];
