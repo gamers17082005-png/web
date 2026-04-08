@@ -7,14 +7,16 @@ const Razorpay = require("razorpay");
 const jwt = require("jsonwebtoken");
 
 const app = express();
+
+// ===== MIDDLEWARE =====
 app.use(cors());
 app.use(express.json());
 
 // ===== CONFIG =====
 const PORT = 5000;
-const JWT_SECRET = "mysecretkey";
+const JWT_SECRET = "supersecretkey";
 
-// ===== FILE PATHS =====
+// ===== FILES =====
 const PRODUCTS_FILE = "products.json";
 const ORDERS_FILE = "orders.json";
 
@@ -25,7 +27,7 @@ if (!fs.existsSync(ORDERS_FILE)) fs.writeFileSync(ORDERS_FILE, "[]");
 // ===== SERVE UPLOADS =====
 app.use("/uploads", express.static("uploads"));
 
-// ===== MULTER (IMAGE UPLOAD) =====
+// ===== MULTER SETUP =====
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     if (!fs.existsSync("uploads")) fs.mkdirSync("uploads");
@@ -39,17 +41,14 @@ const upload = multer({ storage });
 
 // ===== RAZORPAY =====
 const razorpay = new Razorpay({
-  key_id: "YOUR_KEY_ID",
-  key_secret: "YOUR_KEY_SECRET",
+  key_id: "YOUR_KEY_ID",        // 🔁 CHANGE
+  key_secret: "YOUR_KEY_SECRET" // 🔁 CHANGE
 });
 
 // ===== HELPERS =====
-function readJSON(file) {
-  return JSON.parse(fs.readFileSync(file));
-}
-function writeJSON(file, data) {
+const readJSON = (file) => JSON.parse(fs.readFileSync(file));
+const writeJSON = (file, data) =>
   fs.writeFileSync(file, JSON.stringify(data, null, 2));
-}
 
 // ===== ADMIN LOGIN =====
 app.post("/admin/login", (req, res) => {
@@ -97,7 +96,7 @@ app.post("/products", verifyToken, (req, res) => {
     id: Date.now(),
     name: req.body.name,
     price: req.body.price,
-    image: req.body.image,
+    image: req.body.image, // comes from upload API
   };
 
   products.push(newProduct);
@@ -109,10 +108,11 @@ app.post("/products", verifyToken, (req, res) => {
 // DELETE PRODUCT
 app.delete("/products/:id", verifyToken, (req, res) => {
   let products = readJSON(PRODUCTS_FILE);
-  products = products.filter((p) => p.id != req.params.id);
 
+  products = products.filter((p) => p.id != req.params.id);
   writeJSON(PRODUCTS_FILE, products);
-  res.json({ message: "Deleted" });
+
+  res.json({ message: "Product deleted" });
 });
 
 // ===== CREATE ORDER =====
@@ -150,7 +150,7 @@ app.post("/create-order", async (req, res) => {
   }
 });
 
-// ===== SAVE ORDER AFTER PAYMENT =====
+// ===== SAVE ORDER =====
 app.post("/verify-payment", (req, res) => {
   const { cart, address, paymentId } = req.body;
 
@@ -180,9 +180,9 @@ app.get("/orders", verifyToken, (req, res) => {
 // ===== TRACK ORDER =====
 app.get("/track/:id", (req, res) => {
   const orders = readJSON(ORDERS_FILE);
-  const order = orders.find((o) => o.id === req.params.id);
 
-  if (!order) return res.status(404).json({ message: "Not found" });
+  const order = orders.find((o) => o.id === req.params.id);
+  if (!order) return res.status(404).json({ message: "Order not found" });
 
   res.json(order);
 });
@@ -192,15 +192,15 @@ app.put("/orders/:id", verifyToken, (req, res) => {
   const orders = readJSON(ORDERS_FILE);
 
   const order = orders.find((o) => o.id === req.params.id);
-  if (!order) return res.status(404).json({ message: "Not found" });
+  if (!order) return res.status(404).json({ message: "Order not found" });
 
   order.status = req.body.status;
   writeJSON(ORDERS_FILE, orders);
 
-  res.json({ message: "Updated" });
+  res.json({ message: "Order updated" });
 });
 
 // ===== START SERVER =====
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
