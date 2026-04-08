@@ -1,99 +1,193 @@
-const express = require("express");
-const Razorpay = require("razorpay");
-const cors = require("cors");
-const bodyParser = require("body-parser");
-const fs = require("fs");
+// ===== BACKEND URL =====
+const BASE = "https://your-backend.onrender.com"; // 🔁 REPLACE THIS
 
-const app = express();
-app.use(cors());
-app.use(bodyParser.json());
+// ===== GLOBAL CART =====
+let cart = [];
 
-// Razorpay config
-const razorpay = new Razorpay({
-  key_id: "rzp_test_xxxxxxxx",
-  key_secret: "your_secret_key"
-});
+// ===== LOAD PRODUCTS =====
+async function loadProducts() {
+  try {
+    const res = await fetch(`${BASE}/products`);
+    const products = await res.json();
 
-// CREATE ORDER
-app.post("/create-order", async (req, res) => {
-  const { amount } = req.body;
+    const container = document.getElementById("productList");
+    container.innerHTML = "";
 
-  const options = {
-    amount: amount * 100,
-    currency: "INR"
-  };
+    products.forEach((p) => {
+      const div = document.createElement("div");
+      div.className = "product";
 
-  const order = await razorpay.orders.create(options);
-  res.json(order);
-});
+      div.innerHTML = `
+        <img src="${BASE}${p.image}" width="150"/>
+        <h3>${p.name}</h3>
+        <p>₹${p.price}</p>
+        <button onclick="addToCart(${p.id}, '${p.name}', ${p.price}, '${p.image}')">Add to Cart</button>
+      `;
 
-// SAVE ORDER
-app.post("/save-order", (req, res) => {
-  const order = req.body;
+      container.appendChild(div);
+    });
+  } catch (err) {
+    console.error("Error loading products:", err);
+  }
+}
 
-  let orders = [];
+// ===== ADD TO CART =====
+function addToCart(id, name, price, image) {
+  const existing = cart.find((item) => item.id === id);
 
-  if (fs.existsSync("orders.json")) {
-    orders = JSON.parse(fs.readFileSync("orders.json"));
+  if (existing) {
+    existing.quantity++;
+  } else {
+    cart.push({ id, name, price, image, quantity: 1 });
   }
 
-  orders.push(order);
+  updateCartUI();
+}
 
-  fs.writeFileSync("orders.json", JSON.stringify(orders, null, 2));
+// ===== UPDATE CART UI =====
+function updateCartUI() {
+  const cartItems = document.getElementById("cartItems");
+  const cartCount = document.getElementById("cartCount");
 
-  res.json({ message: "Order saved" });
-});
+  cartItems.innerHTML = "";
 
-// GET ORDERS (ADMIN)
-app.get("/orders", (req, res) => {
-  if (!fs.existsSync("orders.json")) return res.json([]);
+  let total = 0;
+  let count = 0;
 
-  const orders = JSON.parse(fs.readFileSync("orders.json"));
-  res.json(orders);
-});
+  cart.forEach((item) => {
+    total += item.price * item.quantity;
+    count += item.quantity;
 
-// UPDATE STATUS
-app.post("/update-status", (req, res) => {
-  const { index, status } = req.body;
+    const div = document.createElement("div");
+    div.innerHTML = `
+      ${item.name} x ${item.quantity} = ₹${item.price * item.quantity}
+    `;
+    cartItems.appendChild(div);
+  });
 
-  let orders = JSON.parse(fs.readFileSync("orders.json"));
+  document.getElementById("cartTotal").innerText = total;
+  cartCount.innerText = count;
+}
 
-  orders[index].status = status;
+// ===== OPEN CART =====
+function openCart() {
+  document.getElementById("cartSection").style.display = "block";
+}
 
-  fs.writeFileSync("orders.json", JSON.stringify(orders, null, 2));
+// ===== CLOSE CART =====
+function closeCart() {
+  document.getElementById("cartSection").style.display = "none";
+}
 
-  res.json({ message: "Updated" });
-});
-
-app.listen(5000, () => console.log("Server running"));
-async function trackOrder() {
-  const phone = document.getElementById("trackPhone").value;
-
-  if (!phone) {
-    alert("Enter phone number");
+// ===== CHECKOUT =====
+function checkout() {
+  if (cart.length === 0) {
+    alert("Cart is empty");
     return;
   }
 
-  const res = await fetch("http://localhost:5000/orders");
-  const data = await res.json();
+  document.getElementById("addressSection").style.display = "block";
+}
 
-  const userOrders = data.filter(o => o.phone === phone);
+// ===== PLACE ORDER =====
+async function placeOrder() {
+  const name = document.getElementById("name").value;
+  const phone = document.getElementById("phone").value;
+  const state = document.getElementById("state").value;
+  const addressLine = document.getElementById("address").value;
 
-  let html = "";
-
-  if (userOrders.length === 0) {
-    html = "<p>No orders found</p>";
-  } else {
-    userOrders.forEach(o => {
-      html += `
-        <div style="border:1px solid #ccc; padding:10px; margin:10px;">
-          <p><b>Amount:</b> ₹${o.total}</p>
-          <p><b>Status:</b> ${o.status}</p>
-          <p><b>Address:</b> ${o.address}</p>
-        </div>
-      `;
-    });
+  if (!name || !phone || !state || !addressLine) {
+    alert("Please fill all fields");
+    return;
   }
 
-  document.getElementById("result").innerHTML = html;
+  const address = {
+    name,
+    phone,
+    state,
+    address: addressLine,
+  };
+
+  try {
+    const res = await fetch(`${BASE}/create-order`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ cart, address }),
+    });
+
+    const data = await res.json();
+
+    startPayment(data, address);
+  } catch (err) {
+    console.error(err);
+  }
 }
+
+// ===== RAZORPAY PAYMENT =====
+function startPayment(orderData, address) {
+  const options = {
+    key: "YOUR_KEY_ID", // 🔁 REPLACE
+    amount: orderData.amount * 100,
+    currency: "INR",
+    name: "HSV Sugandhika",
+    description: "Order Payment",
+    order_id: orderData.orderId,
+
+    handler: async function (response) {
+      await fetch(`${BASE}/verify-payment`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cart,
+          address,
+          paymentId: response.razorpay_payment_id,
+        }),
+      });
+
+      alert("Order placed successfully!");
+
+      cart = [];
+      updateCartUI();
+      closeCart();
+    },
+
+    theme: {
+      color: "#ff7a00",
+    },
+  };
+
+  const rzp = new Razorpay(options);
+  rzp.open();
+}
+
+// ===== ORDER TRACKING =====
+function goToOrders() {
+  const orderId = prompt("Enter your Order ID:");
+  if (orderId) {
+    window.location.href = `/orders.html?id=${orderId}`;
+  }
+}
+
+// ===== SEARCH FILTER =====
+document.addEventListener("DOMContentLoaded", () => {
+  const searchInput = document.getElementById("searchInput");
+
+  if (searchInput) {
+    searchInput.addEventListener("input", function () {
+      const value = this.value.toLowerCase();
+      const products = document.querySelectorAll(".product");
+
+      products.forEach((p) => {
+        const text = p.innerText.toLowerCase();
+        p.style.display = text.includes(value) ? "block" : "none";
+      });
+    });
+  }
+});
+
+// ===== INIT =====
+loadProducts();
