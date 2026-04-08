@@ -4,16 +4,19 @@
   <meta charset="UTF-8">
   <title>About</title>
 
+  <!-- ✅ IMPORTANT (correct path) -->
   <link rel="stylesheet" href="../style.css">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body>
 
-<!-- ✅ HEADER MUST BE FIRST -->
+<!-- ✅ HEADER AT TOP -->
 <header class="navbar">
   <div class="logo">🛕 HSV Sugandhika</div>
 
-  <nav>
+  <nav class="nav-links">
     <a href="../index.html">Home</a>
     <a href="../products.html">Products</a>
     <a href="about.html">About</a>
@@ -22,11 +25,13 @@
     <a href="contact.html">Contact</a>
   </nav>
 
-  <button onclick="toggleCart()">🛒 (<span id="cartCount">0</span>)</button>
+  <button class="cart-btn" onclick="toggleCart()">
+    🛒 (<span id="cartCount">0</span>)
+  </button>
 </header>
 
-<!-- ✅ NOW CONTENT COMES -->
-<section style="padding:40px;">
+<!-- ✅ PAGE CONTENT -->
+<section style="padding: 40px; text-align: center;">
   <h1>About Us</h1>
   <p>We provide natural pooja products from nature.</p>
 </section>
@@ -39,6 +44,7 @@
   © 2026 HSV Sugandhika | All Rights Reserved
 </footer>
 
+<!-- ✅ SCRIPT -->
 <script src="../script.js"></script>
 
 </body>
