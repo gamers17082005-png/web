@@ -96,10 +96,18 @@
 <body>
 
 <!-- NAVBAR -->
-<div class="navbar">
-  <div class="logo">HSV Sugandhika</div>
-  <div onclick="toggleCart()">🛒 Cart (<span id="count">0</span>)</div>
-</div>
+<header class="navbar">
+  <div class="logo">🛕 HSV Sugandhika</div>
+
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Search pooja items..." />
+  </div>
+
+  <div class="nav-actions">
+    <button onclick="goToOrders()">📦 Orders</button>
+    <button onclick="openCart()">🛒 Cart (<span id="cartCount">0</span>)</button>
+  </div>
+</header>
 
 <!-- HERO -->
 <div class="hero">
