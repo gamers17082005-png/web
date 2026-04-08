@@ -1,65 +1,28 @@
-body {
-  font-family: Arial;
-  margin: 0;
-}
+body { font-family: Arial; margin:0; }
 
-/* HEADER */
 .navbar {
-  display: flex;
-  justify-content: space-between;
-  padding: 15px;
-  background: #ff7a00;
-  color: white;
+  display:flex;
+  justify-content:space-between;
+  padding:15px;
+  background:#ff7a00;
+  color:white;
 }
 
-.nav-links a {
-  margin: 0 10px;
-  color: white;
-  text-decoration: none;
-}
+.navbar a { color:white; margin:10px; text-decoration:none; }
 
-/* HERO */
-.hero {
-  text-align: center;
-  padding: 50px;
-  background: #fff5e6;
-}
-
-/* GRID */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
-  gap: 20px;
-  padding: 20px;
-}
-
-/* PRODUCT */
 .card {
-  border: 1px solid #ddd;
-  padding: 10px;
-  text-align: center;
+  border:1px solid #ddd;
+  padding:10px;
+  margin:10px;
 }
 
-/* BUTTON */
-.btn {
-  background: #ff7a00;
-  color: white;
-  padding: 10px 20px;
-  text-decoration: none;
-}
-
-/* CART */
 .cart {
-  position: fixed;
-  right: 0;
-  top: 0;
-  width: 300px;
-  background: white;
-  height: 100%;
-  padding: 20px;
-  border-left: 2px solid #ddd;
+  position:fixed;
+  right:0;
+  top:0;
+  width:300px;
+  height:100%;
+  background:white;
 }
 
-.hidden {
-  display: none;
-}
+.hidden { display:none; }
