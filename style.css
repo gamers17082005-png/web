@@ -96,3 +96,53 @@ body {
   padding: 10px;
   width: 50%;
 }
+.footer {
+  background: #2c0f0f;
+  color: white;
+  padding: 40px 20px 10px;
+}
+
+.footer-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.footer-col h3, .footer-col h2 {
+  margin-bottom: 10px;
+  color: #ff7a00;
+}
+
+.footer-col a {
+  display: block;
+  color: white;
+  text-decoration: none;
+  margin: 5px 0;
+}
+
+.footer-col a:hover {
+  color: #ff7a00;
+}
+
+.social-icons a {
+  margin-right: 10px;
+  font-size: 20px;
+  text-decoration: none;
+}
+
+.whatsapp {
+  display: inline-block;
+  margin-top: 10px;
+  background: #25D366;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: white;
+  text-decoration: none;
+}
+
+.footer-bottom {
+  text-align: center;
+  margin-top: 20px;
+  border-top: 1px solid #555;
+  padding-top: 10px;
+}
