@@ -12,19 +12,22 @@
     }
 
     /* NAVBAR */
-    .navbar {
-      background: #ff7a00;
-      color: white;
-      padding: 15px;
-      display: flex;
-      justify-content: space-between;
-    }
+<header class="navbar">
+  <div class="logo">🛕 HSV Sugandhika</div>
 
-    .logo {
-      font-size: 20px;
-      font-weight: bold;
-    }
+  <nav class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="products.html">Products</a>
+    <a href="about.html">About</a>
+    <a href="benefits.html">Benefits</a>
+    <a href="testimonials.html">Testimonials</a>
+    <a href="contact.html">Contact</a>
+  </nav>
 
+  <div class="nav-actions">
+    <button onclick="openCart()">🛒 (<span id="cartCount">0</span>)</button>
+  </div>
+</header>
     /* HERO */
     .hero {
       background: linear-gradient(to right, #ff7a00, #d4af37);
