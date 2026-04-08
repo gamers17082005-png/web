@@ -1,137 +1,19 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Admin Dashboard</title>
-</head>
+<h1>Admin</h1>
 
-<body>
+<input id="name" placeholder="Product Name">
+<input id="price" placeholder="Price">
 
-<h2>Admin Login</h2>
-
-<input id="user" placeholder="Username"><br><br>
-<input id="pass" type="password" placeholder="Password"><br><br>
-
-<button onclick="login()">Login</button>
-
-<div id="panel" style="display:none;">
-
-  <h2>Orders</h2>
-  <div id="orders"></div>
-
-  <hr>
-
-  <h2>Add Product</h2>
-
-  <input id="pname" placeholder="Product Name"><br><br>
-  <input id="pprice" placeholder="Price"><br><br>
-  <input id="pimage" placeholder="Image URL"><br><br>
-
-  <button onclick="addProduct()">Add Product</button>
-
-  <h2>Products</h2>
-  <div id="products"></div>
-
-</div>
+<button onclick="addProduct()">Add</button>
 
 <script>
-
-// LOGIN
-function login() {
-  const u = document.getElementById("user").value;
-  const p = document.getElementById("pass").value;
-
-  if (u === "admin" && p === "1234") {
-    document.getElementById("panel").style.display = "block";
-    loadOrders();
-    loadProducts();
-  } else {
-    alert("Wrong login");
-  }
-}
-
-// LOAD ORDERS
-async function loadOrders() {
-  const res = await fetch("http://localhost:5000/orders");
-  const data = await res.json();
-
-  let html = "";
-
-  data.forEach((o, i) => {
-    html += `
-      <div style="border:1px solid #ccc; padding:10px; margin:10px;">
-        <p><b>${o.name}</b> (${o.phone})</p>
-        <p>${o.address}, ${o.state}</p>
-        <p>₹${o.total}</p>
-        <p>Status: ${o.status}</p>
-
-        <button onclick="update(${i}, 'Shipped')">Ship</button>
-        <button onclick="update(${i}, 'Delivered')">Deliver</button>
-      </div>
-    `;
+function addProduct(){
+  fetch("http://localhost:5000/add-product", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
+      name: document.getElementById("name").value,
+      price: document.getElementById("price").value
+    })
   });
-
-  document.getElementById("orders").innerHTML = html;
 }
-
-// UPDATE ORDER STATUS
-async function update(index, status) {
-  await fetch("http://localhost:5000/update-status", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ index, status })
-  });
-
-  loadOrders();
-}
-
-// ADD PRODUCT
-async function addProduct() {
-  const name = document.getElementById("pname").value;
-  const price = document.getElementById("pprice").value;
-  const image = document.getElementById("pimage").value;
-
-  await fetch("http://localhost:5000/add-product", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ name, price, image })
-  });
-
-  alert("Product Added!");
-  loadProducts();
-}
-
-// LOAD PRODUCTS
-async function loadProducts() {
-  const res = await fetch("http://localhost:5000/products");
-  const data = await res.json();
-
-  let html = "";
-
-  data.forEach((p, i) => {
-    html += `
-      <div style="border:1px solid #ccc; padding:10px; margin:10px;">
-        <img src="${p.image}" width="50">
-        <p>${p.name} - ₹${p.price}</p>
-        <button onclick="deleteProduct(${i})">Delete</button>
-      </div>
-    `;
-  });
-
-  document.getElementById("products").innerHTML = html;
-}
-
-// DELETE PRODUCT
-async function deleteProduct(index) {
-  await fetch("http://localhost:5000/delete-product", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ index })
-  });
-
-  loadProducts();
-}
-
 </script>
-
-</body>
-</html>
