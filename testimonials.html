@@ -1,65 +1,102 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Testimonials</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Testimonials - HSV Sugandhika</title>
+
+  <!-- LINK CSS (IMPORTANT: adjust path if needed) -->
+  <link rel="stylesheet" href="../style.css">
+
+  <!-- PAGE-SPECIFIC FIX (ONLY FOR THIS PAGE) -->
+  <style>
+    body {
+      background-color: #f5f5f5 !important;
+    }
+
+    header {
+      background-color: #000 !important;
+      color: #fff !important;
+    }
+
+    footer {
+      background-color: #000 !important;
+      color: #fff !important;
+    }
+
+    .reviews {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      padding: 40px;
+    }
+
+    .review-box {
+      background: #fff !important;
+      color: #000 !important;
+      padding: 20px;
+      border-radius: 10px;
+      width: 320px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 30px;
+    }
+  </style>
 </head>
 
 <body>
-<!-- ✅ HEADER AT TOP -->
-<header class="header">
-  <header style="background:red;">
-  
-  <div class="container">
-    <h2>🛕 HSV Sugandhika</h2>
-    <nav class="nav">
-      <a href="index.html">Home</a>
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">🪔 HSV Sugandhika</div>
+    <nav>
+      <a href="../index.html">Home</a>
       <a href="products.html">Products</a>
       <a href="about.html">About</a>
       <a href="benefits.html">Benefits</a>
       <a href="testimonials.html">Testimonials</a>
       <a href="contact.html">Contact</a>
     </nav>
-  </div>
-</header>
-  <!-- ✅ PAGE CONTENT -->
-  <section>
-  <h1>Reviews</h1>
+  </header>
 
-  <div class="products">
-    <div class="card">I'm ordering this HSV Sugandhika incense sticks for the 2nd time, I've ordered 4 flavors of this sticks all are good, and fragrance feels like temple and these are naturally made so, there no toxic chemicals. Must recommended for temple like feels</div>
-    <div class="card">🙏 This incense set, along with the
-sambrani cups, offers a calming and traditional aromatic experience. The
-fragrances, i ordered Javadhu, Kesari Chandan, and Kasturi are mild, natural, and pleasantly authentic, making them ideal for daily pooja. Each incense stick burns for approximately an hour with a moderate level of smoke, while the sambrani cups provide a richer, more traditional aroma. The fragrance remains for about 20-30 minutes after use, creating a calm and uplifting atmosphere. While the overall quality is good, which is why I would rate it 4 out of 5 Thank you.
+  <!-- CONTENT -->
+  <h2>Reviews</h2>
 
-I'll definitely experience the other fragrance incense sticks and
-products soon.
-All the best</div>
-  </div>
-</section>
+  <section class="reviews">
+    <div class="review-box">
+      <p>
+        I'm ordering HSV Sugandhika incense sticks for the 2nd time.
+        The fragrance feels like temple and is completely natural.
+        Must recommended for spiritual use.
+      </p>
+    </div>
 
-<!-- ✅ CART -->
-<div id="cart" class="cart hidden"></div>
+    <div class="review-box">
+      <p>
+        🙏 This incense set gives a calming and traditional aroma.
+        Long-lasting fragrance and perfect for daily pooja.
+        Will definitely order again!
+      </p>
+    </div>
 
-<!-- ✅ FOOTER -->
-   <footer class="footer">
-  <footer style="background-color:#1a1a1a; color:white; padding:20px; text-align:center;">
-      <p>© 2026 HSV Sugandhika | All Rights Reserved</p>
- 
+    <div class="review-box">
+      <p>
+        Excellent quality products. The smell is very pure and soothing.
+        Packaging is also neat and premium. Highly satisfied!
+      </p>
+    </div>
+  </section>
 
-  <div class="socials">
-    <a href="#">🌐</a>
-    <a href="#">📷</a>
-    <a href="#">📘</a>
-    <a href="#">📞</a>
-  </div>
-    
-</footer>
-
-
-
-<!-- ✅ SCRIPT -->
-<script src="../script.js"></script>
+  <!-- FOOTER -->
+  <footer>
+    <p>© 2026 HSV Sugandhika | All Rights Reserved</p>
+    <div>
+      🌐 📷 💬 📞
+    </div>
+  </footer>
 
 </body>
 </html>
